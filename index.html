@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌾 Plot Twist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="game">
+
+  <!-- HEADER -->
+  <header id="header">
+    <div class="header-inner">
+    <span class="game-title">🌾 Plot Twist</span>
+    <div class="header-stats">
+      <div class="stat-pill coins">
+        <span class="icon">🪙</span>
+        <span class="val" id="stat-coins">2</span>
+      </div>
+      <div class="level-pill">
+        <div class="level-top">
+          <span class="level-badge">Lv <span id="stat-level">1</span></span>
+          <span class="level-title-text" id="stat-level-title">Seedling</span>
+          <span class="xp-text"><span id="stat-xp">0</span>/<span id="stat-xp-max">150</span> XP</span>
+        </div>
+        <div class="xp-bar-outer">
+          <div class="xp-bar-fill" id="xp-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="stat-pill score">
+        <span class="icon">🏆</span>
+        <span class="val" id="stat-score">300</span>
+      </div>
+      <div class="prestige-pill" id="prestige-pill" style="display:none" onclick="doPrestige()" title="Click to Prestige at Level 10">
+        <span id="prestige-stars"></span>
+        <span id="prestige-bonus"></span>
+      </div>
+    </div>
+    <div class="bsv-pill" id="bsv-pill">
+      <span id="bsv-status">Wallet: Local Mode</span>
+      <button onclick="connectWallet()">Connect</button>
+    </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main id="main">
+
+    <!-- FARM AREA -->
+    <section id="farm-area">
+      <div id="farm-heading">
+        <div class="farm-name-wrap" onclick="startEditName('farm')" title="Click to rename your farm">
+          <span class="farm-name-text" id="farm-name-display">🌿 My Farm</span>
+          <span class="name-edit-icon">✏️</span>
+        </div>
+        <div class="farmer-name-wrap" onclick="startEditName('farmer')" title="Click to set your name">
+          <span class="farmer-label">Farmer</span>
+          <span class="farmer-name-text" id="farmer-name-display">Farmer</span>
+          <span class="name-edit-icon">✏️</span>
+        </div>
+        <button class="journal-btn" onclick="openJournal()" title="Crop Journal &amp; Achievements" id="journal-btn">
+          📖 Journal <span id="journal-new-badge" style="display:none" class="journal-new-dot"></span>
+        </button>
+        <button class="lb-share-btn" id="lb-share-btn" onclick="lbShareScore()" title="Share your Farm Score to the leaderboard" style="display:none">
+          🏆 Share Score
+        </button>
+      </div>
+      <div id="plots-grid"></div>
+
+      <!-- STORAGE -->
+      <div id="storage-area">
+        <div id="storage-heading">
+          🎒 Seed Storage
+          <span id="storage-count-badge">empty</span>
+        </div>
+        <div id="storage-grid"></div>
+      </div>
+
+      <!-- WATERING CAN -->
+      <div id="watering-can-area">
+        <button id="watering-can-btn" onclick="useWateringCan()" title="Watering Can"></button>
+        <div id="watering-can-info">
+          <div id="watering-can-label">
+            🪣 Watering Can
+            <span style="font-size:10px;font-weight:700;color:var(--text-dim)">−10% grow time</span>
+          </div>
+          <div id="watering-can-status">Filling…</div>
+          <div id="watering-can-bar-outer">
+            <div id="watering-can-bar-fill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMPOST PILE -->
+      <div id="compost-area">
+        <button id="compost-btn" onclick="toggleFertiliseMode()" title="Compost Pile"></button>
+        <div id="compost-info">
+          <div id="compost-label">
+            🌿 Compost Pile
+            <span style="font-size:10px;font-weight:700;color:var(--text-dim)">+25% sell value</span>
+          </div>
+          <div id="compost-status">Loading…</div>
+          <div class="compost-pips" id="compost-pips"></div>
+        </div>
+      </div>
+      <!-- VEGE STAND -->
+      <div id="vege-stand-area" style="display:none"></div>
+
+    </section>
+
+    <!-- SHOP SIDEBAR -->
+    <aside id="shop-sidebar">
+      <div id="shop-header">
+        <div id="shop-title">🛒 Seed Shop</div>
+        <div id="shop-hint">Buy seeds → they go to storage → tap storage to plant.</div>
+      </div>
+      <div id="selected-banner"></div>
+      <div id="shop-crops-list"></div>
+    </aside>
+
+  </main>
+</div>
+
+<!-- Notification container -->
+<div id="notif-container"></div>
+
+<!-- Random Event Modal -->
+<div id="event-overlay" class="hidden">
+  <div id="event-card">
+    <span class="event-icon" id="event-icon"></span>
+    <div class="event-title" id="event-title"></div>
+    <div class="event-desc"  id="event-desc"></div>
+    <div class="event-btns" id="event-btns"></div>
+  </div>
+</div>
+
+<!-- In-game Confirm Modal (replaces browser confirm() blocked in iframe) -->
+<div id="confirm-overlay" class="hidden">
+  <div id="confirm-card">
+    <div class="event-title" id="confirm-title"></div>
+    <div class="event-desc"  id="confirm-desc"></div>
+    <div class="event-btns">
+      <button class="event-btn-primary"   id="confirm-ok">Confirm</button>
+      <button class="event-btn-secondary" onclick="closeConfirm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Wandering Merchant Banner -->
+<div id="merchant-banner" class="hidden">
+  <div class="merchant-icon">🧙</div>
+  <div class="merchant-body">
+    <div class="merchant-title" id="merchant-title">Wandering Merchant</div>
+    <div class="merchant-offer" id="merchant-offer"></div>
+    <div class="merchant-timer" id="merchant-timer"></div>
+  </div>
+  <div class="merchant-btns">
+    <button class="merchant-btn-deal" id="merchant-deal-btn" onclick="acceptMerchantDeal()">Take Deal</button>
+    <button class="merchant-btn-pass" onclick="dismissMerchant()">Pass</button>
+  </div>
+</div>
+
+<!-- Crop Journal Modal -->
+<div id="journal-overlay" class="hidden">
+  <div id="journal-modal">
+    <div id="journal-header">
+      <div id="journal-title">📖 Crop Journal</div>
+      <div id="journal-tabs">
+        <button class="jtab active" onclick="showJTab('crops')" title="Crop Journal — harvest counts &amp; milestone badges for every crop">Crops</button>
+        <button class="jtab" onclick="showJTab('farm')" title="Farm Achievements — harvests, coins, plots, levels &amp; prestige milestones">Farm</button>
+        <button class="jtab" onclick="showJTab('events')" title="Events &amp; Merchant — random event history, merchant deals &amp; exotic farming achievements">Events</button>
+        <button class="jtab" onclick="showJTab('leaderboard')" title="Leaderboard — share your Farm Score &amp; see the top farmers">🏆</button>
+        <button class="jtab" id="market-tab-btn" onclick="showJTab('market')" title="Vege Stand Market — browse &amp; buy exotic seeds from other farmers" style="display:none">🥕</button>
+      </div>
+      <button class="journal-close-btn" onclick="closeJournal()">✕</button>
+    </div>
+    <div id="journal-body">
+      <div id="jtab-crops" class="jtab-panel active"></div>
+      <div id="jtab-farm"  class="jtab-panel"></div>
+      <div id="jtab-events" class="jtab-panel"></div>
+      <div id="jtab-leaderboard" class="jtab-panel"></div>
+      <div id="jtab-market" class="jtab-panel"></div>
+    </div>
+    <div id="journal-footer">
+      <span id="journal-summary"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Supabase client for leaderboard -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<!-- Metanet Platform SDK Snippet (stub for local dev) -->
+<script type="module">
+  const eventTarget = new EventTarget();
+  const callback = (data) => eventTarget.dispatchEvent(new CustomEvent('command', { detail: data }));
+  const sendCommand = (command, params = {}) => {
+    if (window.parent !== window) {
+      window.parent.postMessage({ command: "ninja-app-command", ...params, command }, '*');
+    } else {
+      // Stub for local dev
+      console.log('Platform command:', command, params);
+    }
+  };
+  const onCommand = (handler) => {
+    eventTarget.addEventListener('command', (e) => handler(e.detail));
+    // Also listen for messages from parent window
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.command === "ninja-app-command") callback(event.data);
+    });
+  };
+  window.platformSDK = { sendCommand, onCommand };
+</script>
+
+<!-- Game modules -->
+<script type="module" src="js/constants.js"></script>
+<script type="module" src="js/utils.js"></script>
+<script type="module" src="js/game-state.js"></script>
+<script type="module" src="js/achievements.js"></script>
+<script type="module" src="js/wallet.js"></script>
+<script type="module" src="js/rendering.js"></script>
+<script type="module" src="js/marketplace.js"></script>
+<script type="module" src="js/leaderboard.js"></script>
+<script type="module" src="js/main.js"></script></html>
+
+</body>
+</html>
