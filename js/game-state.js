@@ -2,50 +2,46 @@
 // GAME STATE MANAGEMENT
 // ============================================================
 
-import { SAVE_KEY, CROP_MAP, EVENT_MIN_GAP, EVENT_MAX_GAP, RANDOM_EVENTS, MERCHANT_MIN_GAP, MERCHANT_MAX_GAP, MERCHANT_DURATION, MERCHANT_DEALS } from './constants.js';
-import { checkAchievements } from './achievements.js';
-import { getLevelData, checkLevelUp } from './utils.js';
+import { SAVE_KEY, CROP_MAP, EVENT_MIN_GAP, EVENT_MAX_GAP, RANDOM_EVENTS,
+         MERCHANT_MIN_GAP, MERCHANT_MAX_GAP, MERCHANT_DURATION, MERCHANT_DEALS } from './constants.js';
+import { getLevelData, checkLevelUp, formatTime } from './utils.js';
 
-// ── Deferred UI imports (to avoid circular dependencies) ──
-// These get set by rendering.js or calling modules
+// ── Deferred UI handlers (avoids circular imports) ──────────
 let _notifyFn = null;
 let _renderAllFn = null;
 let _renderPlotsFn = null;
+let _checkAchievementsFn = null;
 
-export function setUIHandlers(notifyFn, renderAllFn, renderPlotsFn) {
+export function setUIHandlers(notifyFn, renderAllFn, renderPlotsFn, checkAchievementsFn) {
   _notifyFn = notifyFn;
   _renderAllFn = renderAllFn;
   _renderPlotsFn = renderPlotsFn;
+  _checkAchievementsFn = checkAchievementsFn;
 }
 
-function notify(msg, type) {
+export function notify(msg, type) {
   if (_notifyFn) _notifyFn(msg, type);
   else console.log('[notification]', msg);
 }
 
-function renderAll() {
-  if (_renderAllFn) _renderAllFn();
-}
+function renderAll() { if (_renderAllFn) _renderAllFn(); }
+function renderPlots() { if (_renderPlotsFn) _renderPlotsFn(); }
+function checkAchievements() { if (_checkAchievementsFn) _checkAchievementsFn(); }
 
-function renderPlots() {
-  if (_renderPlotsFn) _renderPlotsFn();
-}
-
-// Global event state
+// Global event/merchant timers
 let _nextEventTime = 0;
-// Global merchant state
 let _nextMerchantTime = 0;
 
 export const DEFAULT_STATE = {
   coins: 2,
   totalXP: 0,
   level: 1,
-  prestige: 0,          // 0-50; each prestige resets farm, grants +10% sell bonus
-  farmName: 'My Farm',    // editable, max 15 chars
-  farmerName: 'Farmer',   // editable, max 15 chars
-  selectedCrop: null,   // cropId selected from storage, ready to plant
-  shopExpanded: null,   // cropId whose qty picker is open in the shop
-  inventory: {},        // { cropId: count }
+  prestige: 0,
+  farmName: 'My Farm',
+  farmerName: 'Farmer',
+  selectedCrop: null,
+  shopExpanded: null,
+  inventory: {},
   plots: Array.from({length:20}, (_, i) => ({
     idx: i,
     unlocked: i === 0,
@@ -53,82 +49,59 @@ export const DEFAULT_STATE = {
     cropId: null,
     plantedAt: null,
     ready: false,
-    fertilised: false,   // +25% sell bonus on next harvest
-    seeding: false,      // exotic: true when going to seed instead of harvesting
-    seedingStartedAt: null, // ms timestamp when seed phase began
-    seedingDuration: null,  // ms total duration of seed phase
-    seedReady: false,    // true when seed phase is complete
-    heritage: false,     // true if the planted seed was a Heritage variant
+    fertilised: false,
+    seeding: false,
+    seedingStartedAt: null,
+    seedingDuration: null,
+    seedReady: false,
+    heritage: false,
   })),
   walletConnected: false,
   walletAddress: null,
-  cropHarvests: {},      // { cropId: totalCount } — lifetime, survives prestige
-  totalHarvestCount: 0, // lifetime total harvests
-  totalCoinsEarned: 0,  // lifetime coins earned from harvests
-  achievementsEarned: [], // array of achievement ids earned
-
-  lastEventTime: 0,      // ms timestamp of last random event
-  merchantActive: false, // is merchant banner showing?
-  merchantDeal: null,    // current deal object
-  merchantExpiry: 0,     // ms timestamp when merchant leaves
-
-  wateringCanLastUsed: 0, // ms timestamp — 0 = never used (starts full)
-
-  compostCharges: 5,       // 0-5 current charges; starts full
-  compostLastCharged: 0,   // ms timestamp when last charge was added
-  fertiliseMode: false,    // true when player is selecting a plot to fertilise
-
-  // Vege Stand marketplace
-  standListings: [],    // Array of active listing objects (escrow)
-  standEnabled: true,   // Whether this player's stand is open
-  standMaxSlots: 3,     // Max simultaneous listings
-
-  // Exotic seed-saving counters (lifetime, survive prestige)
-  seedsCollectedTotal: 0,  // total seed collections via seed-saving
-  exoticMishapsTotal: 0,   // total plots lost to mishaps
-  _exoticMishapsFix: 0,    // times player paid to fix a mishap
-  _exoticNearMisses: 0,    // times a near-miss mishap was survived
-  _heritageCollected: 0,   // total heritage seeds ever collected
+  cropHarvests: {},
+  totalHarvestCount: 0,
+  totalCoinsEarned: 0,
+  achievementsEarned: [],
+  lastEventTime: 0,
+  merchantActive: false,
+  merchantDeal: null,
+  merchantExpiry: 0,
+  wateringCanLastUsed: 0,
+  compostCharges: 5,
+  compostLastCharged: 0,
+  fertiliseMode: false,
+  standListings: [],
+  standEnabled: true,
+  standMaxSlots: 3,
+  seedsCollectedTotal: 0,
+  exoticMishapsTotal: 0,
+  _exoticMishapsFix: 0,
+  _exoticNearMisses: 0,
+  _heritageCollected: 0,
 };
 
-export let G = null; // game state
+export let G = null;
 
 // ============================================================
 // PERSISTENCE
 // ============================================================
-
 export function saveGame() {
   try {
     const saveData = {
-      coins: G.coins,
-      totalXP: G.totalXP,
-      level: G.level,
-      prestige: G.prestige,
-      farmName: G.farmName,
-      farmerName: G.farmerName,
-      inventory: G.inventory,
+      coins: G.coins, totalXP: G.totalXP, level: G.level, prestige: G.prestige,
+      farmName: G.farmName, farmerName: G.farmerName, inventory: G.inventory,
       plots: G.plots.map(p => ({
-        idx: p.idx,
-        unlocked: p.unlocked,
-        harvestedCount: p.harvestedCount,
-        cropId: p.cropId,
-        plantedAt: p.plantedAt,
-        ready: p.ready,
-        fertilised: p.fertilised,
-        seeding: p.seeding || false,
+        idx: p.idx, unlocked: p.unlocked, harvestedCount: p.harvestedCount,
+        cropId: p.cropId, plantedAt: p.plantedAt, ready: p.ready,
+        fertilised: p.fertilised, seeding: p.seeding || false,
         seedingStartedAt: p.seedingStartedAt || null,
         seedingDuration: p.seedingDuration || null,
-        seedReady: p.seedReady || false,
-        heritage: p.heritage || false,
+        seedReady: p.seedReady || false, heritage: p.heritage || false,
       })),
-      walletConnected: G.walletConnected,
-      walletAddress: G.walletAddress,
-      cropHarvests: G.cropHarvests,
-      totalHarvestCount: G.totalHarvestCount,
-      totalCoinsEarned: G.totalCoinsEarned,
-      achievementsEarned: G.achievementsEarned,
-      lastEventTime: G.lastEventTime,
-      merchantExpiry: G.merchantExpiry,
+      walletConnected: G.walletConnected, walletAddress: G.walletAddress,
+      cropHarvests: G.cropHarvests, totalHarvestCount: G.totalHarvestCount,
+      totalCoinsEarned: G.totalCoinsEarned, achievementsEarned: G.achievementsEarned,
+      lastEventTime: G.lastEventTime, merchantExpiry: G.merchantExpiry,
       merchantDeal: G.merchantDeal,
       _merchantDealsAccepted: G._merchantDealsAccepted || 0,
       _eventsEncountered: G._eventsEncountered || 0,
@@ -136,21 +109,19 @@ export function saveGame() {
       _sunBonusCount: G._sunBonusCount || 0,
       _beeBoostCount: G._beeBoostCount || 0,
       wateringCanLastUsed: G.wateringCanLastUsed,
-      compostCharges: G.compostCharges,
-      compostLastCharged: G.compostLastCharged,
+      compostCharges: G.compostCharges, compostLastCharged: G.compostLastCharged,
       seedsCollectedTotal: G.seedsCollectedTotal || 0,
       exoticMishapsTotal: G.exoticMishapsTotal || 0,
       _exoticMishapsFix: G._exoticMishapsFix || 0,
       _exoticNearMisses: G._exoticNearMisses || 0,
       _heritageCollected: G._heritageCollected || 0,
       standListings: G.standListings || [],
-      standEnabled: G.standEnabled !== false,
-      standMaxSlots: G.standMaxSlots || 3,
+      standEnabled: G.standEnabled !== false, standMaxSlots: G.standMaxSlots || 3,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
   } catch(e) {
     console.warn('Save failed:', e);
-    notify('⚠️ Game save failed. Your progress may not be preserved. Check your browser storage settings.', 'error');
+    notify('⚠️ Game save failed. Check your browser storage settings.', 'error');
   }
 }
 
@@ -168,32 +139,32 @@ export function loadGame() {
       G.farmerName = saved.farmerName ?? 'Farmer';
       G.inventory = saved.inventory ?? {};
       G.walletConnected = saved.walletConnected ?? false;
-      G.cropHarvests       = saved.cropHarvests       ?? {};
-      G.totalHarvestCount  = saved.totalHarvestCount  ?? 0;
-      G.totalCoinsEarned   = saved.totalCoinsEarned   ?? 0;
+      G.walletAddress = saved.walletAddress ?? null;
+      G.cropHarvests = saved.cropHarvests ?? {};
+      G.totalHarvestCount = saved.totalHarvestCount ?? 0;
+      G.totalCoinsEarned = saved.totalCoinsEarned ?? 0;
       G.achievementsEarned = saved.achievementsEarned ?? [];
-      G.lastEventTime  = saved.lastEventTime  ?? 0;
+      G.lastEventTime = saved.lastEventTime ?? 0;
       G.merchantExpiry = saved.merchantExpiry ?? 0;
-      G.merchantDeal   = saved.merchantDeal   ?? null;
+      G.merchantDeal = saved.merchantDeal ?? null;
       G.merchantActive = (saved.merchantDeal && saved.merchantExpiry > Date.now());
       G._merchantDealsAccepted = saved._merchantDealsAccepted ?? 0;
       G._eventsEncountered = saved._eventsEncountered ?? 0;
-      G._eventsFixed       = saved._eventsFixed       ?? 0;
-      G._sunBonusCount     = saved._sunBonusCount     ?? 0;
-      G._beeBoostCount     = saved._beeBoostCount     ?? 0;
+      G._eventsFixed = saved._eventsFixed ?? 0;
+      G._sunBonusCount = saved._sunBonusCount ?? 0;
+      G._beeBoostCount = saved._beeBoostCount ?? 0;
       G.wateringCanLastUsed = saved.wateringCanLastUsed ?? 0;
-      G.compostCharges    = Math.min(saved.compostCharges ?? 5, 5); // clamp — never exceed max
+      G.compostCharges = Math.min(saved.compostCharges ?? 5, 5);
       G.compostLastCharged = saved.compostLastCharged ?? 0;
-      G.seedsCollectedTotal  = saved.seedsCollectedTotal  ?? 0;
-      G.exoticMishapsTotal   = saved.exoticMishapsTotal   ?? 0;
-      G._exoticMishapsFix    = saved._exoticMishapsFix    ?? 0;
-      G._exoticNearMisses    = saved._exoticNearMisses    ?? 0;
-      G._heritageCollected   = saved._heritageCollected   ?? 0;
-      G.standListings  = saved.standListings  ?? [];
-      G.standEnabled   = saved.standEnabled   !== false;
-      G.standMaxSlots  = saved.standMaxSlots  ?? 3;
+      G.seedsCollectedTotal = saved.seedsCollectedTotal ?? 0;
+      G.exoticMishapsTotal = saved.exoticMishapsTotal ?? 0;
+      G._exoticMishapsFix = saved._exoticMishapsFix ?? 0;
+      G._exoticNearMisses = saved._exoticNearMisses ?? 0;
+      G._heritageCollected = saved._heritageCollected ?? 0;
+      G.standListings = saved.standListings ?? [];
+      G.standEnabled = saved.standEnabled !== false;
+      G.standMaxSlots = saved.standMaxSlots ?? 3;
       G.fertiliseMode = false;
-      G.walletAddress = saved.walletAddress ?? null;
       if (saved.plots) {
         saved.plots.forEach((sp, i) => {
           if (G.plots[i]) Object.assign(G.plots[i], {
@@ -213,91 +184,80 @@ export function loadGame() {
     }
   } catch(e) {
     console.warn('Load failed:', e);
-    notify('⚠️ Could not load saved game. Starting with default settings.', 'error');
+    notify('⚠️ Could not load saved game. Starting fresh.', 'error');
   }
   G = JSON.parse(JSON.stringify(DEFAULT_STATE));
 }
 
 // ============================================================
-// WALLET FUNCTIONS (MOVED TO wallet.js)
+// MARKETPLACE STUB
 // ============================================================
-
-// ============================================================
-// ACHIEVEMENT FUNCTIONS (MOVED TO achievements.js)
-// ============================================================
-
-// ============================================================
-// MARKETPLACE FUNCTIONS (STUBS - TO BE IMPLEMENTED)
-// ============================================================
-
 export function returnStandSeedsToStorage() {
-  // TODO: Implement returning escrowed seeds
-  console.log('returnStandSeedsToStorage called');
+  if (!G || !G.standListings || G.standListings.length === 0) return;
+  G.standListings.forEach(listing => {
+    const key = listing.heritage ? listing.cropId + '_heritage' : listing.cropId;
+    G.inventory[key] = (G.inventory[key] || 0) + listing.qty;
+  });
+  G.standListings = [];
+  saveGame();
 }
 
 // ============================================================
-// EVENT FUNCTIONS (STUBS - TO BE IMPLEMENTED)
+// GAME TICK
 // ============================================================
-
-export function scheduleNextEvent() {
-  // TODO: Implement event scheduling
-  console.log('scheduleNextEvent called');
-}
-
-export function scheduleNextMerchant() {
-  // TODO: Implement merchant scheduling
-  console.log('scheduleNextMerchant called');
-}
-
-export function restoreMerchantIfActive() {
-  // TODO: Implement merchant restoration
-  console.log('restoreMerchantIfActive called');
-}
-
-// ============================================================
-// GAME TICK (STUB - TO BE IMPLEMENTED)
-// ============================================================
-
 export function tick() {
   try {
     let changed = false;
     const now = Date.now();
+
+    // Advance growing plots
     G.plots.forEach(plot => {
       if (plot.cropId && plot.plantedAt && !plot.ready && !plot.seeding) {
         const crop = CROP_MAP[plot.cropId];
         if (crop && (now - plot.plantedAt) >= crop.gameSecs * 1000) {
           plot.ready = true;
           changed = true;
-          // TODO: notify harvest ready
         }
       }
     });
-    // TODO: checkRandomEvent();
-    // TODO: checkMerchant();
-    // TODO: tickCompost();
-    // TODO: tickSeedSaving();
-    // TODO: renderStats();
-    // TODO: renderWateringCan();
-    // TODO: renderCompost();
+
+    // Advance seeding plots
+    G.plots.forEach(plot => {
+      if (plot.seeding && !plot.seedReady && plot.seedingStartedAt && plot.seedingDuration) {
+        if ((now - plot.seedingStartedAt) >= plot.seedingDuration) {
+          plot.seedReady = true;
+          changed = true;
+          const crop = CROP_MAP[plot.cropId];
+          notify(`🌱 ${crop ? crop.name : 'Exotic'} seeds are ready to collect!`, 'harvest');
+        }
+      }
+    });
+
+    // Compost recharge
+    if (G.compostCharges < 5 && G.compostLastCharged > 0) {
+      const elapsed = (now - G.compostLastCharged) / 1000;
+      if (elapsed >= 4 * 60) {
+        G.compostCharges = Math.min(G.compostCharges + 1, 5);
+        G.compostLastCharged = G.compostCharges < 5 ? now : 0;
+        changed = true;
+      }
+    }
+
+    checkRandomEvent();
+    checkMerchant();
+
     if (changed) {
       saveGame();
-      // TODO: renderPlots();
-      // TODO: renderStorage();
-      // TODO: renderShop();
-    } else {
-      // TODO: renderPlotsOnly();
+      renderAll();
     }
   } catch(e) {
     console.error('Game tick error:', e);
-    // Continue running - don't crash the game
-    // TODO: notify error
   }
 }
 
 // ============================================================
-// EVENT SYSTEM
+// RANDOM EVENTS
 // ============================================================
-
 export function scheduleNextEvent() {
   const gap = EVENT_MIN_GAP + Math.random() * (EVENT_MAX_GAP - EVENT_MIN_GAP);
   _nextEventTime = Date.now() + gap;
@@ -305,11 +265,11 @@ export function scheduleNextEvent() {
 
 export function checkRandomEvent() {
   if (Date.now() < _nextEventTime) return;
-  // Don't stack on top of merchant or another event
-  if (!document.getElementById('event-overlay').classList.contains('hidden')) return;
+  const overlay = document.getElementById('event-overlay');
+  if (!overlay || !overlay.classList.contains('hidden')) return;
   if (G.merchantActive) return;
 
-  const eligible = RANDOM_EVENTS.filter(e => e.canTrigger());
+  const eligible = RANDOM_EVENTS.filter(e => e.canTrigger && e.canTrigger());
   if (eligible.length === 0) { scheduleNextEvent(); return; }
 
   const ev = eligible[Math.floor(Math.random() * eligible.length)];
@@ -320,9 +280,7 @@ export function checkRandomEvent() {
 function showEventModal(ev) {
   const cost = ev.cost(G.level);
   const canAfford = G.coins >= cost;
-  const descText = ev.desc
-    .replace('{cost}', cost)
-    .replace('{steal}', '30%');
+  const descText = ev.desc.replace('{cost}', cost).replace('{steal}', '30%');
 
   document.getElementById('event-icon').textContent  = ev.icon;
   document.getElementById('event-title').textContent = ev.title;
@@ -330,27 +288,21 @@ function showEventModal(ev) {
 
   const btns = document.getElementById('event-btns');
   const fixLabel = ev.fixLabel(cost);
-
   let html = '<button class="event-btn-primary" id="ev-fix-btn"'
     + ((!canAfford && cost > 0) ? ' disabled' : '')
     + ' onclick="resolveEvent(true)">' + fixLabel + '</button>';
-
   if (ev.onIgnore !== null) {
     html += '<button class="event-btn-secondary" onclick="resolveEvent(false)">Ignore</button>';
   }
-
   btns.innerHTML = html;
   document.getElementById('event-overlay').classList.remove('hidden');
   G._eventsEncountered = (G._eventsEncountered || 0) + 1;
-
-  // Store current event for resolving
   window._currentEvent = { ev, cost };
 }
 
 // ============================================================
 // MERCHANT SYSTEM
 // ============================================================
-
 export function scheduleNextMerchant() {
   const gap = MERCHANT_MIN_GAP + Math.random() * (MERCHANT_MAX_GAP - MERCHANT_MIN_GAP);
   _nextMerchantTime = Date.now() + gap;
@@ -358,29 +310,24 @@ export function scheduleNextMerchant() {
 
 export function checkMerchant() {
   const now = Date.now();
-
-  // If merchant is active, update timer or dismiss if expired
   if (G.merchantActive) {
     const remaining = Math.max(0, G.merchantExpiry - now);
     const timerEl = document.getElementById('merchant-timer');
     if (timerEl) timerEl.textContent = 'Leaves in ' + formatTime(remaining / 1000);
     if (remaining <= 0) { dismissMerchant(); return; }
-    // Re-check affordability each tick so button enables when coins arrive
     const dealBtn = document.getElementById('merchant-deal-btn');
     if (dealBtn && window._merchantCanAfford) {
       dealBtn.disabled = !window._merchantCanAfford();
     }
     return;
   }
-
   if (now < _nextMerchantTime) return;
-  if (!document.getElementById('event-overlay').classList.contains('hidden')) return;
-
+  const overlay = document.getElementById('event-overlay');
+  if (!overlay || !overlay.classList.contains('hidden')) return;
   spawnMerchant();
 }
 
 function spawnMerchant() {
-  // Pick a random deal type; filter ones needing crops if none growing
   const available = MERCHANT_DEALS.filter(d => !d.canTrigger || d.canTrigger());
   if (available.length === 0) { scheduleNextMerchant(); return; }
 
@@ -388,10 +335,8 @@ function spawnMerchant() {
   const deal = dealType.makeOffer();
 
   G.merchantActive = true;
-  G.merchantDeal = { ...deal, execute: null }; // store serialisable parts
+  G.merchantDeal = { ...deal, execute: null };
   G.merchantExpiry = Date.now() + MERCHANT_DURATION;
-
-  // Keep the live execute fn in memory (not in G, can't serialise functions)
   window._merchantExecute = deal.execute;
   window._merchantCanAfford = deal.canAfford;
 
@@ -400,7 +345,6 @@ function spawnMerchant() {
   const dealBtn = document.getElementById('merchant-deal-btn');
   dealBtn.textContent = deal.btnText;
   dealBtn.disabled = !deal.canAfford();
-
   document.getElementById('merchant-banner').classList.remove('hidden');
   saveGame();
   scheduleNextMerchant();
@@ -433,16 +377,12 @@ export function dismissMerchant() {
   saveGame();
 }
 
-// Restore merchant UI after a page reload
 export function restoreMerchantIfActive() {
   if (!G.merchantActive || !G.merchantDeal || Date.now() >= G.merchantExpiry) {
     G.merchantActive = false;
     return;
   }
-
   const d = G.merchantDeal;
-
-  // Reconstruct canAfford and execute from saved params
   switch (d.typeId) {
     case 'seed_discount':
       window._merchantCanAfford = () => G.coins >= d.dealPrice;
@@ -496,19 +436,24 @@ export function restoreMerchantIfActive() {
       window._merchantExecute = () => {
         G.coins -= d.dealPrice;
         G.inventory[d.cropId] = (G.inventory[d.cropId] || 0) + d.qty;
-        notify('✨ Got ' + d.qty + '× ' + CROP_MAP[d.cropId].name + ' exotic seed' + (d.qty > 1 ? 's' : '') + '! Check your storage!', 'levelup');
+        notify('✨ Got ' + d.qty + '× ' + CROP_MAP[d.cropId].name + ' exotic seed' + (d.qty > 1 ? 's' : '') + '!', 'levelup');
       };
       break;
     default:
-      // Unknown deal type — show banner but disable button
       window._merchantExecute = null;
       window._merchantCanAfford = null;
   }
-
   document.getElementById('merchant-title').textContent = '🧙 Wandering Merchant';
   document.getElementById('merchant-offer').textContent = d.offerText || 'Special offer available!';
   const dealBtn = document.getElementById('merchant-deal-btn');
   dealBtn.textContent = d.btnText || 'Take Deal';
   dealBtn.disabled = !window._merchantCanAfford || !window._merchantCanAfford();
   document.getElementById('merchant-banner').classList.remove('hidden');
+}
+
+// ============================================================
+// FARM SCORE (also exported for leaderboard)
+// ============================================================
+export function calcFarmScore() {
+  return Math.floor(Math.pow(G.level, 2) * 300 + G.coins * 1 + G.totalXP * 0.5);
 }

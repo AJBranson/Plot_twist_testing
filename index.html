@@ -194,36 +194,29 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <!-- Metanet Platform SDK Snippet (stub for local dev) -->
-<script type="module">
-  const eventTarget = new EventTarget();
-  const callback = (data) => eventTarget.dispatchEvent(new CustomEvent('command', { detail: data }));
-  const sendCommand = (command, params = {}) => {
-    if (window.parent !== window) {
-      window.parent.postMessage({ command: "ninja-app-command", ...params, command }, '*');
-    } else {
-      // Stub for local dev
-      console.log('Platform command:', command, params);
-    }
-  };
-  const onCommand = (handler) => {
-    eventTarget.addEventListener('command', (e) => handler(e.detail));
-    // Also listen for messages from parent window
-    window.addEventListener('message', (event) => {
-      if (event.data && event.data.command === "ninja-app-command") callback(event.data);
-    });
-  };
-  window.platformSDK = { sendCommand, onCommand };
+<script>
+  // Metanet Platform SDK — matches the official SDK structure from docs
+  // sendCommand wraps postMessage; onCommand listens for responses.
+  (function() {
+    const sendCommand = (commandObj) => {
+      if (window.parent !== window) {
+        window.parent.postMessage({ command: "ninja-app-command", detail: commandObj }, '*');
+      } else {
+        console.log('[Dev] Platform command:', commandObj);
+      }
+    };
+    const onCommand = (callback) => {
+      window.addEventListener('message', (event) => {
+        if (event.data && event.data.command === "ninja-app-command") {
+          callback(event.data);
+        }
+      });
+    };
+    window.platformSDK = { sendCommand, onCommand };
+  })();
 </script>
 
-<!-- Game modules -->
-<script type="module" src="js/constants.js"></script>
-<script type="module" src="js/utils.js"></script>
-<script type="module" src="js/game-state.js"></script>
-<script type="module" src="js/achievements.js"></script>
-<script type="module" src="js/wallet.js"></script>
-<script type="module" src="js/rendering.js"></script>
-<script type="module" src="js/marketplace.js"></script>
-<script type="module" src="js/leaderboard.js"></script>
+<!-- Game entry point — imports all other modules -->
 <script type="module" src="js/main.js"></script></html>
 
 </body>

@@ -3,7 +3,9 @@
 // ============================================================
 
 import { G, saveGame } from './game-state.js';
-import { renderAll, notify } from './rendering.js';
+
+// Uses window.notify and window.renderAll set up by main.js
+// to avoid circular dependency with rendering.js
 
 export function connectWallet() {
   if (window.platformSDK) {
@@ -14,18 +16,20 @@ export function connectWallet() {
           G.walletConnected = true;
           G.walletAddress = data.payload.wallet.address;
           saveGame();
-          renderAll();
-          notify('✅ Wallet connected!', 'unlock');
+          if (window.renderAll) window.renderAll();
+          if (window.notify) window.notify('✅ Wallet connected!', 'unlock');
         } else {
-          notify('👤 Running anonymously — coins only mode.', 'error');
-          setPlayerState('anonymous');
+          if (window.notify) window.notify('👤 Running anonymously — coins only mode.', 'error');
+          G.walletConnected = false;
+          G.walletAddress = null;
         }
       }
     });
   } else {
     console.log('Dev mode: no Metanet SDK. Running in coins-only mode.');
-    notify('🔧 Wallet connection requires Metanet.page environment. Running in coins-only mode.', 'error');
-    setPlayerState('anonymous');
+    if (window.notify) window.notify('🔧 Wallet requires Metanet.page. Running in coins-only mode.', 'error');
+    G.walletConnected = false;
+    G.walletAddress = null;
   }
 }
 
@@ -33,13 +37,6 @@ export function disconnectWallet() {
   G.walletConnected = false;
   G.walletAddress = null;
   saveGame();
-  renderAll();
-  notify('🔌 Wallet disconnected.', 'error');
-}
-
-function setPlayerState(state) {
-  if (state === 'anonymous') {
-    G.walletConnected = false;
-    G.walletAddress = null;
-  }
+  if (window.renderAll) window.renderAll();
+  if (window.notify) window.notify('🔌 Wallet disconnected.', 'error');
 }

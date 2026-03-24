@@ -1,68 +1,157 @@
-// main.js - Main initialization and game loop for BSV Farm Game
+// ============================================================
+// MAIN — initialization and window global wiring
+// ============================================================
+// The HTML uses onclick="functionName()" inline handlers.
+// ES modules are scoped, so every function the HTML calls
+// must be explicitly assigned to window here.
+// ============================================================
 
 import { MARKETPLACE_ENABLED } from './constants.js';
-
-import {
-  G,
-  loadGame,
-  saveGame,
-  setUIHandlers,
-  // returnStandSeedsToStorage,
-  // scheduleNextEvent,
-  // scheduleNextMerchant,
-  // restoreMerchantIfActive,
-  tick
-} from './game-state.js';
-
+import { G, loadGame, saveGame, setUIHandlers, scheduleNextEvent,
+         scheduleNextMerchant, restoreMerchantIfActive, tick,
+         acceptMerchantDeal, dismissMerchant } from './game-state.js';
 import { connectWallet, disconnectWallet } from './wallet.js';
 import { buildAllAchievements, checkAchievements } from './achievements.js';
+import { cropArt, CROP_THEME, wateringCanCharge, getLevelData, checkLevelUp } from './utils.js';
 
 import {
-  renderAll,
-  renderPlots,
-  renderCompost,
-  closeJournal,
-  notify
+  renderAll, renderPlots, renderStorage, renderShop, renderCompost,
+  renderHeading, renderWateringCan, notify, shakeStat, showFloatLabel,
+  openJournal, closeJournal, showJTab, closeConfirm, showConfirm,
 } from './rendering.js';
 
-// Initialization function
+import {
+  toggleShopCard, shopChangeQty, buySeeds, buySeedsBSV,
+  clearSelectedCrop, selectFromStorage, tryPlant, tryUnlockPlot,
+  unlockPlotBSV, harvestCrop, useWateringCan, toggleFertiliseMode,
+  applyFertiliser, startSeedSaving, collectSeeds, showHarvestFork,
+  doPrestige, startEditName, resolveEvent, applyMishapPartial, applyMishapTotal,
+  getSeedingPlotsAtRisk,
+} from './game.js';
+
+import { lbShareScore } from './leaderboard.js';
+import { setMarketFilter, setMarketSort, refreshMarket, executePurchase,
+         listSeeds, cancelListing, showBuyConfirm } from './marketplace.js';
+
+// ── Expose window globals ─────────────────────────────────
+// Rendering helpers (used by game.js via window.*)
+window.notify          = notify;
+window.renderAll       = renderAll;
+window.renderPlots     = renderPlots;
+window.renderStorage   = renderStorage;
+window.renderShop      = renderShop;
+window.renderCompost   = renderCompost;
+window.renderHeading   = renderHeading;
+window.renderWateringCan = renderWateringCan;
+window.shakeStat       = shakeStat;
+window.showFloatLabel  = showFloatLabel;
+window.showConfirm     = showConfirm;
+window.closeConfirm    = closeConfirm;
+
+// Game state
+window.G               = null;   // set after loadGame below
+window.saveGame        = saveGame;
+window.getLevelData    = getLevelData;
+window.checkLevelUp    = checkLevelUp;
+
+// Crop art helpers (used by game.js for harvest-fork overlay)
+window._cropArt        = cropArt;
+window._CROP_THEME     = CROP_THEME;
+window._wateringCanCharge = wateringCanCharge;
+
+// Wallet
+window.connectWallet   = connectWallet;
+window.disconnectWallet= disconnectWallet;
+
+// Journal / UI
+window.openJournal     = openJournal;
+window.closeJournal    = closeJournal;
+window.showJTab        = showJTab;
+
+// Shop
+window.toggleShopCard  = toggleShopCard;
+window.shopChangeQty   = shopChangeQty;
+window.buySeeds        = buySeeds;
+window.buySeedsBSV     = buySeedsBSV;
+
+// Storage / planting
+window.clearSelectedCrop = clearSelectedCrop;
+window.selectFromStorage = selectFromStorage;
+window.tryPlant          = tryPlant;
+window.tryUnlockPlot     = tryUnlockPlot;
+window.unlockPlotBSV     = unlockPlotBSV;
+
+// Harvest / farm
+window.harvestCrop       = harvestCrop;
+window.useWateringCan    = useWateringCan;
+window.toggleFertiliseMode = toggleFertiliseMode;
+window.applyFertiliser   = applyFertiliser;
+window.doPrestige        = doPrestige;
+window.startEditName     = startEditName;
+window.resolveEvent      = resolveEvent;
+
+// Seed saving
+window.startSeedSaving   = startSeedSaving;
+window.collectSeeds      = collectSeeds;
+window.showHarvestFork   = showHarvestFork;
+window.applyMishapPartial = applyMishapPartial;
+window.applyMishapTotal   = applyMishapTotal;
+window.getSeedingPlotsAtRisk = getSeedingPlotsAtRisk;
+
+// Merchant / events
+window.acceptMerchantDeal = acceptMerchantDeal;
+window.dismissMerchant    = dismissMerchant;
+
+// Leaderboard
+window.lbShareScore       = lbShareScore;
+
+// Marketplace
+window.setMarketFilter    = setMarketFilter;
+window.setMarketSort      = setMarketSort;
+window.refreshMarket      = refreshMarket;
+window.executePurchase    = executePurchase;
+window.listSeeds          = listSeeds;
+window.cancelListing      = cancelListing;
+window.showBuyConfirm     = showBuyConfirm;
+
+// ── Initialization ────────────────────────────────────────
 function init() {
-  // Wire up UI handlers to avoid circular dependencies
-  setUIHandlers(notify, renderAll, renderPlots);
-  
+  // Wire deferred UI handlers (breaks circular game-state ↔ rendering)
+  setUIHandlers(notify, renderAll, renderPlots, checkAchievements);
+
   loadGame();
 
-  // Try to connect wallet if platform SDK present
-  if (window.platformSDK) {
-    connectWallet();
-  }
+  // Now G is populated — expose on window for constants.js callbacks
+  window.G = G;
 
-  // TODO: buildAllAchievements();
-  // TODO: checkAchievements(); // evaluate on load (for returning players)
+  // Build achievement list
+  buildAllAchievements();
 
-  // TODO: Return escrowed stand seeds if marketplace is disabled
-  // if (!MARKETPLACE_ENABLED) {
-  //   returnStandSeedsToStorage();
-  // } else {
-    // Show stand area
-    const standArea = document.getElementById('vege-stand-area');
-    if (standArea) standArea.style.display = '';
-  // }
+  // Connect wallet if inside Metanet.page
+  if (window.platformSDK) connectWallet();
 
+  // Show / hide vege stand
+  const standArea = document.getElementById('vege-stand-area');
+  if (standArea) standArea.style.display = MARKETPLACE_ENABLED ? '' : 'none';
+
+  // First render
   renderAll();
 
-  // TODO: Schedule first event and merchant
-  // scheduleNextEvent();
-  // scheduleNextMerchant();
-  // restoreMerchantIfActive();
+  // Check achievements for returning players
+  checkAchievements();
 
-  // Close journal on Escape
+  // Start events & merchant scheduling
+  scheduleNextEvent();
+  scheduleNextMerchant();
+  restoreMerchantIfActive();
+
+  // ── Keyboard shortcuts ──────────────────────────────────
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       closeJournal();
-      document.getElementById('event-overlay').classList.add('hidden');
-      const hf = document.getElementById('harvest-fork-overlay');
-      if (hf) hf.remove();
+      document.getElementById('event-overlay')?.classList.add('hidden');
+      document.getElementById('confirm-overlay')?.classList.add('hidden');
+      document.getElementById('harvest-fork-overlay')?.remove();
       if (G.fertiliseMode) {
         G.fertiliseMode = false;
         renderPlots();
@@ -71,59 +160,40 @@ function init() {
     }
   });
 
-  // ── Pinch-zoom stuck overlay fix ────────────────────────────
-  // Pinch gestures fire resize and can accidentally trigger a tap
-  // on a market listing row, creating a buy-confirm overlay that
-  // then sits invisibly blocking all further interaction.
-  // Two defences:
-  //   1. Track active touch count — if >1 fingers are down, flag
-  //      a brief suppression window so the subsequent click is ignored.
-  //   2. On any resize (which pinch-zoom always fires), dismiss any
-  //      orphaned buy-confirm overlay and clear pending state.
-
+  // ── Pinch-zoom stuck overlay fix ────────────────────────
   let _touchCount = 0;
   let _suppressNextClick = false;
 
   document.addEventListener('touchstart', e => {
     _touchCount = e.touches.length;
-    if (_touchCount > 1) {
-      _suppressNextClick = true;
-    }
+    if (_touchCount > 1) _suppressNextClick = true;
   }, { passive: true });
 
   document.addEventListener('touchend', e => {
     _touchCount = e.touches.length;
-    // Keep suppression active for 400ms after pinch ends
-    if (_suppressNextClick) {
-      setTimeout(() => { _suppressNextClick = false; }, 400);
-    }
+    if (_suppressNextClick) setTimeout(() => { _suppressNextClick = false; }, 400);
   }, { passive: true });
 
-  // Intercept clicks on market listing buy buttons during/after pinch
   document.addEventListener('click', e => {
-    if (_suppressNextClick && e.target.closest && e.target.closest('.market-buy-btn')) {
+    if (_suppressNextClick && e.target.closest?.('.market-buy-btn')) {
       e.stopImmediatePropagation();
       e.preventDefault();
     }
   }, true);
 
-  // On resize (fired by pinch-zoom), dismiss any stuck buy overlay
   window.addEventListener('resize', () => {
     const overlay = document.getElementById('buy-confirm-overlay');
-    if (overlay) {
-      overlay.remove();
-      window._pendingBuyListing = null;
-    }
+    if (overlay) { overlay.remove(); window._pendingBuyListing = null; }
   });
 
-  // Tick every second
-  setInterval(tick, 1000);
-
-  // Also re-render shop when coins change (handled in renderAll already)
+  // ── Game tick (1 s) ─────────────────────────────────────
+  setInterval(() => {
+    tick();
+    // Keep window.G in sync (G is a module-level let, window.G is a reference)
+    window.G = G;
+    renderWateringCan();
+    renderCompost();
+  }, 1000);
 }
 
-// Run initialization
 init();
-
-// Export for potential use by other modules
-export { init };

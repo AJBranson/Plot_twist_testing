@@ -1,24 +1,20 @@
-// leaderboard.js - Leaderboard functionality for BSV Farm Game
+// leaderboard.js - Leaderboard functionality
 
-// Leaderboard configuration
+import { G, calcFarmScore } from './game-state.js';
+import { getLevelData, escHtml, timeSince } from './utils.js';
+
+// Uses window.notify to avoid circular dep with rendering.js
+
 const LB_CONFIG = {
   url: 'https://hhisdlawemzihzbxmwkc.supabase.co',
   anonKey: 'sb_publishable__lesBNacxfH92P_zn9Fo9A_XIDtn_3e',
   gameId: 'plot-twist',
 };
 
-// Supabase client — initialised lazily so a missing config
-// just means leaderboard silently shows "unavailable"
 let _lbClient = null;
-
-// Cache — avoid re-fetching while the journal tab is open
-let _lbCache = null;          // array of top-10 rows
-let _lbCacheTime = 0;         // ms timestamp of last fetch
-const LB_CACHE_TTL = 60000;   // 60 seconds
-
-// Import dependencies
-import { G, calcFarmScore, getLevelData, notify } from './game-state.js';
-import { escHtml, timeSince } from './utils.js';
+let _lbCache = null;
+let _lbCacheTime = 0;
+const LB_CACHE_TTL = 60000;
 
 export function lbClient() {
   if (_lbClient) return _lbClient;
@@ -32,15 +28,12 @@ export function lbClient() {
   return _lbClient;
 }
 
-// Upsert the current player's score
 export async function lbSubmitScore() {
   const db = lbClient();
   if (!db || !G.walletConnected || !G.walletAddress) return false;
 
   const score = calcFarmScore();
   const levelDat = getLevelData(G.level);
-
-  // lb_users: upsert by wallet address — update name/score if improved
   const maxRetries = 3;
   let lastError;
 
@@ -58,25 +51,20 @@ export async function lbSubmitScore() {
       }, { onConflict: 'address', ignoreDuplicates: false });
 
       if (ue) throw ue;
-
-      // Bust the cache so the leaderboard refreshes next open
       _lbCache = null;
       _lbCacheTime = 0;
       return true;
     } catch (e) {
       lastError = e;
-      console.warn(`Leaderboard submit attempt ${attempt}/${maxRetries} failed:`, e.message);
       if (attempt < maxRetries) {
         await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
       }
     }
   }
-
-  console.warn('Leaderboard submit failed after all retries:', lastError.message);
+  console.warn('Leaderboard submit failed:', lastError.message);
   return false;
 }
 
-// Fetch top 10
 export async function lbFetchTop10() {
   const db = lbClient();
   if (!db) return null;
@@ -96,49 +84,35 @@ export async function lbFetchTop10() {
         .limit(10);
 
       if (error) throw error;
-
       _lbCache = data || [];
       _lbCacheTime = now;
       return _lbCache;
     } catch (e) {
       lastError = e;
-      console.warn(`Leaderboard fetch attempt ${attempt}/${maxRetries} failed:`, e.message);
       if (attempt < maxRetries) {
-        // Wait before retrying (exponential backoff)
         await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
       }
     }
   }
-
-  console.warn('Leaderboard fetch failed after all retries:', lastError.message);
-  return _lbCache || null; // Return cached data if available, otherwise null
+  console.warn('Leaderboard fetch failed:', lastError.message);
+  return _lbCache || null;
 }
 
-// Share Score button handler
 export async function lbShareScore() {
   const btn = document.getElementById('lb-share-btn');
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = '⏳ Submitting…';
-  }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Submitting…'; }
 
-  // 1. Write to Supabase immediately (regardless of post outcome)
   const ok = await lbSubmitScore();
 
-  if (btn) {
-    btn.disabled = false;
-    btn.textContent = '🏆 Share Score';
-  }
+  if (btn) { btn.disabled = false; btn.textContent = '🏆 Share Score'; }
 
   if (!ok) {
-    notify('⚠️ Leaderboard unavailable — score not submitted.', 'error');
+    if (window.notify) window.notify('⚠️ Leaderboard unavailable — score not submitted.', 'error');
     return;
   }
 
-  notify('🏆 Score submitted to leaderboard!', 'levelup');
+  if (window.notify) window.notify('🏆 Score submitted to leaderboard!', 'levelup');
 
-  // 2. Generate score card image and fire create-post
-  //    Player can edit, cancel, or post — the score is already recorded.
   if (window.platformSDK) {
     const scoreCard = lbGenerateScoreCard();
     const score = calcFarmScore();
@@ -158,87 +132,32 @@ export async function lbShareScore() {
   }
 }
 
-// Generate a 600×400 score card as a previewAsset object
 export function lbGenerateScoreCard() {
   const canvas = document.createElement('canvas');
-  canvas.width = 600;
-  canvas.height = 400;
+  canvas.width = 600; canvas.height = 400;
   const ctx = canvas.getContext('2d');
-
-  // Background gradient
   const bg = ctx.createLinearGradient(0, 0, 600, 400);
-  bg.addColorStop(0, '#0C1A08');
-  bg.addColorStop(0.5, '#182B14');
-  bg.addColorStop(1, '#0C1A08');
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, 600, 400);
-
-  // Subtle grid lines
-  ctx.strokeStyle = 'rgba(111,207,58,0.07)';
-  ctx.lineWidth = 1;
-  for (let x = 0; x < 600; x += 40) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, 400);
-    ctx.stroke();
-  }
-  for (let y = 0; y < 400; y += 40) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(600, y);
-    ctx.stroke();
-  }
-
-  // Gold border
-  ctx.strokeStyle = 'rgba(255,209,64,0.5)';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(4, 4, 592, 392);
-
-  // Game title
-  ctx.fillStyle = '#6FCF3A';
-  ctx.shadowColor = '#6FCF3A';
-  ctx.shadowBlur = 12;
-  ctx.font = 'bold 28px Arial, sans-serif';
-  ctx.textAlign = 'center';
+  bg.addColorStop(0, '#0C1A08'); bg.addColorStop(0.5, '#182B14'); bg.addColorStop(1, '#0C1A08');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, 600, 400);
+  ctx.strokeStyle = 'rgba(255,209,64,0.5)'; ctx.lineWidth = 3; ctx.strokeRect(4, 4, 592, 392);
+  ctx.fillStyle = '#6FCF3A'; ctx.shadowColor = '#6FCF3A'; ctx.shadowBlur = 12;
+  ctx.font = 'bold 28px Arial, sans-serif'; ctx.textAlign = 'center';
   ctx.fillText('🌾 Plot Twist', 300, 60);
-
-  // Farm name
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = 'rgba(232,245,220,0.7)';
-  ctx.font = '20px Arial, sans-serif';
-  ctx.fillText(G.farmName || 'My Farm', 300, 96);
-
-  // Score
-  ctx.fillStyle = '#FFD140';
-  ctx.shadowColor = '#FFD140';
-  ctx.shadowBlur = 20;
-  ctx.font = 'bold 72px Arial, sans-serif';
-  ctx.fillText(calcFarmScore().toLocaleString(), 300, 190);
-
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = 'rgba(232,245,220,0.5)';
-  ctx.font = '18px Arial, sans-serif';
-  ctx.fillText('FARM SCORE', 300, 220);
-
-  // Farmer name + level
+  ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(232,245,220,0.7)';
+  ctx.font = '20px Arial, sans-serif'; ctx.fillText(G.farmName || 'My Farm', 300, 96);
+  ctx.fillStyle = '#FFD140'; ctx.shadowColor = '#FFD140'; ctx.shadowBlur = 20;
+  ctx.font = 'bold 72px Arial, sans-serif'; ctx.fillText(calcFarmScore().toLocaleString(), 300, 190);
+  ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(232,245,220,0.5)';
+  ctx.font = '18px Arial, sans-serif'; ctx.fillText('FARM SCORE', 300, 220);
   const ld = getLevelData(G.level);
-  ctx.fillStyle = 'rgba(232,245,220,0.9)';
-  ctx.font = 'bold 22px Arial, sans-serif';
+  ctx.fillStyle = 'rgba(232,245,220,0.9)'; ctx.font = 'bold 22px Arial, sans-serif';
   ctx.fillText(`${G.farmerName || 'Farmer'} — ${ld ? ld.title : ''} (Lv${G.level})`, 300, 268);
-
-  // Prestige
   if (G.prestige > 0) {
-    ctx.fillStyle = '#FFD140';
-    ctx.font = '18px Arial, sans-serif';
+    ctx.fillStyle = '#FFD140'; ctx.font = '18px Arial, sans-serif';
     ctx.fillText(`⭐ Prestige ${G.prestige}`, 300, 300);
   }
-
-  // Footer
-  ctx.fillStyle = 'rgba(111,207,58,0.5)';
-  ctx.font = '16px Arial, sans-serif';
+  ctx.fillStyle = 'rgba(111,207,58,0.5)'; ctx.font = '16px Arial, sans-serif';
   ctx.fillText('Play Plot Twist on Metanet.page', 300, 365);
-
-  // Convert canvas → File + dataURL (required by create-post previewAsset)
   const dataURL = canvas.toDataURL('image/jpeg', 0.85);
   const arr = dataURL.split(',');
   const mime = arr[0].match(/:(.*?);/)[1];
@@ -249,16 +168,12 @@ export function lbGenerateScoreCard() {
   return { type: 'image', file, preview: dataURL };
 }
 
-// Render the leaderboard journal tab
 export async function renderLeaderboardTab() {
   const panel = document.getElementById('jtab-leaderboard');
   if (!panel) return;
-
   const db = lbClient();
   const score = calcFarmScore();
   const ld = getLevelData(G.level);
-
-  // My score card at the top
   const myConnected = G.walletConnected && G.walletAddress;
   const presStr = G.prestige > 0 ? ` · Prestige ${G.prestige}` : '';
   const myCardHtml = `
@@ -270,37 +185,25 @@ export async function renderLeaderboardTab() {
       </div>
       <div style="text-align:right">
         ${myConnected
-          ? `<button class="lb-share-btn" onclick="lbShareScore()" style="margin-left:0">🏆 Share Score</button>
-             <div style="font-size:10px;color:var(--text-dim);margin-top:4px">Submits & posts to feed</div>`
+          ? `<button class="lb-share-btn" onclick="lbShareScore()" style="margin-left:0">🏆 Share Score</button>`
           : `<div style="font-size:11px;color:var(--text-dim)">Connect wallet to<br>join the leaderboard</div>`
         }
       </div>
     </div>`;
-
-  // Not configured yet
   if (!db) {
-    panel.innerHTML = myCardHtml + `
-      <div class="lb-empty">
-        🏗️ Leaderboard not configured yet.<br>
-        <span style="font-size:11px;margin-top:6px;display:block">Fill in LB_CONFIG in the game script with your Supabase URL and anon key.</span>
-      </div>`;
+    panel.innerHTML = myCardHtml + `<div class="lb-empty">🏗️ Leaderboard not configured yet.</div>`;
     return;
   }
-
   panel.innerHTML = myCardHtml + `<div class="lb-loading">⏳ Loading leaderboard…</div>`;
-
   const rows = await lbFetchTop10();
-
   if (!rows) {
-    panel.innerHTML = myCardHtml + `<div class="lb-empty">⚠️ Could not load leaderboard. Check your connection.</div>`;
+    panel.innerHTML = myCardHtml + `<div class="lb-empty">⚠️ Could not load leaderboard.</div>`;
     return;
   }
-
   if (rows.length === 0) {
     panel.innerHTML = myCardHtml + `<div class="lb-empty">🌱 No scores yet — be the first!</div>`;
     return;
   }
-
   const rankEmoji = ['🥇', '🥈', '🥉'];
   const rowsHtml = rows.map((r, i) => {
     const isMine = myConnected && r.address === G.walletAddress;
@@ -316,22 +219,9 @@ export async function renderLeaderboardTab() {
       <div class="lb-score">${Number(r.score).toLocaleString()}</div>
     </div>`;
   }).join('');
-
-  const myRankRow = myConnected ? rows.findIndex(r => r.address === G.walletAddress) : -1;
-  const notOnBoard = myConnected && myRankRow === -1 && rows.length >= 10;
-  const notOnBoardHtml = notOnBoard
-    ? `<div style="font-size:11px;color:var(--text-dim);text-align:center;margin-top:8px">
-         Your score of ${score.toLocaleString()} is not in the top 10 yet.
-       </div>`
-    : '';
-
-  panel.innerHTML = myCardHtml
-    + `<div class="lb-section-title">🏆 Top 10 Farmers</div>`
-    + rowsHtml
-    + notOnBoardHtml;
+  panel.innerHTML = myCardHtml + `<div class="lb-section-title">🏆 Top 10 Farmers</div>` + rowsHtml;
 }
 
-// Show Share Score button once wallet is connected
 export function lbUpdateShareBtn() {
   const btn = document.getElementById('lb-share-btn');
   if (!btn) return;
