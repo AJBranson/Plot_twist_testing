@@ -16,6 +16,7 @@ let _currentJTab = 'crops';
 // WATERING CAN
 // ============================================================
 export function renderWateringCan() {
+  if (!G) return;
   const btn = document.getElementById('watering-can-btn');
   const fill = document.getElementById('watering-can-bar-fill');
   const status = document.getElementById('watering-can-status');
@@ -62,6 +63,7 @@ function wateringCanSVG(charge) {
 // COMPOST
 // ============================================================
 export function renderCompost() {
+  if (!G) return;
   const btn = document.getElementById('compost-btn');
   const status = document.getElementById('compost-status');
   const pips = document.getElementById('compost-pips');
@@ -107,6 +109,7 @@ function compostPileSVG(charges) {
 // MAIN RENDER FUNCTIONS
 // ============================================================
 export function renderAll() {
+  if (!G) return;
   renderStats();
   renderHeading();
   renderPlots();

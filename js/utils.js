@@ -3,7 +3,6 @@
 // ============================================================
 
 import { LEVELS, CROPS, CROP_MAP } from './constants.js';
-import { G, saveGame } from './game-state.js';
 
 // ============================================================
 // CONSTANTS
@@ -43,10 +42,12 @@ export const CROP_THEME = {
 // LEVEL HELPERS
 // ============================================================
 export function getLevelData(lvl) { return LEVELS[Math.min(lvl - 1, LEVELS.length - 1)]; }
-export function getCurrentLevel() { return getLevelData(G.level); }
+export function getCurrentLevel() { return getLevelData(window.G ? window.G.level : 1); }
 
-// Recalculate level from total XP (mutates G.level)
+// Recalculate level from total XP (mutates window.G.level)
 export function checkLevelUp() {
+  const G = window.G;
+  if (!G) return;
   for (let i = LEVELS.length - 1; i >= 0; i--) {
     if (G.totalXP >= LEVELS[i].xpMin) {
       G.level = LEVELS[i].lvl;
@@ -57,22 +58,22 @@ export function checkLevelUp() {
 }
 
 export function getAvailableCrops() {
-  return CROPS.filter(c => c.unlockLevel <= G.level);
+  return CROPS.filter(c => c.unlockLevel <= window.G.level);
 }
 
 export function isCropUnlocked(cropId) {
   const c = CROP_MAP[cropId];
   if (!c) return false;
-  if (c.exotic) return (G.inventory[cropId] || 0) > 0 || (G.inventory[cropId + '_heritage'] || 0) > 0;
-  return c.unlockLevel <= G.level;
+  if (c.exotic) return (window.G.inventory[cropId] || 0) > 0 || (window.G.inventory[cropId + '_heritage'] || 0) > 0;
+  return c.unlockLevel <= window.G.level;
 }
 
 export function prestigeMultiplier() {
-  return 1 + (G.prestige * 0.10);
+  return 1 + (window.G.prestige * 0.10);
 }
 
 export function calcFarmScore() {
-  return Math.floor(Math.pow(G.level, 2) * 300 + G.coins * 1 + G.totalXP * 0.5);
+  return Math.floor(Math.pow(window.G.level, 2) * 300 + window.G.coins * 1 + window.G.totalXP * 0.5);
 }
 
 export function formatTime(secs) {
@@ -85,7 +86,7 @@ export function formatTime(secs) {
 
 export function canUnlockPlot(idx) {
   if (idx === 0) return true;
-  return G.plots[idx - 1].harvestedCount >= 1;
+  return window.G.plots[idx - 1].harvestedCount >= 1;
 }
 
 // ============================================================
@@ -107,8 +108,8 @@ export function timeSince(date) {
 // WATERING CAN
 // ============================================================
 export function wateringCanCharge() {
-  if (G.wateringCanLastUsed === 0) return 1;
-  const elapsed = (Date.now() - G.wateringCanLastUsed) / 1000;
+  if (window.G.wateringCanLastUsed === 0) return 1;
+  const elapsed = (Date.now() - window.G.wateringCanLastUsed) / 1000;
   return Math.min(elapsed / WATERING_CAN_CHARGE_SECS, 1);
 }
 
@@ -116,9 +117,9 @@ export function wateringCanCharge() {
 // COMPOST
 // ============================================================
 export function compostNextChargeSecs() {
-  if (G.compostCharges >= COMPOST_MAX_CHARGES) return 0;
-  if (G.compostLastCharged === 0) return COMPOST_CHARGE_SECS;
-  const elapsed = (Date.now() - G.compostLastCharged) / 1000;
+  if (window.G.compostCharges >= COMPOST_MAX_CHARGES) return 0;
+  if (window.G.compostLastCharged === 0) return COMPOST_CHARGE_SECS;
+  const elapsed = (Date.now() - window.G.compostLastCharged) / 1000;
   return Math.max(0, COMPOST_CHARGE_SECS - elapsed);
 }
 

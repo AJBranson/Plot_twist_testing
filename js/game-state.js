@@ -206,6 +206,7 @@ export function returnStandSeedsToStorage() {
 // GAME TICK
 // ============================================================
 export function tick() {
+  if (!G) return;
   try {
     let changed = false;
     const now = Date.now();
@@ -264,6 +265,7 @@ export function scheduleNextEvent() {
 }
 
 export function checkRandomEvent() {
+  if (!G) return;
   if (Date.now() < _nextEventTime) return;
   const overlay = document.getElementById('event-overlay');
   if (!overlay || !overlay.classList.contains('hidden')) return;

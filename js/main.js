@@ -188,9 +188,9 @@ function init() {
 
   // ── Game tick (1 s) ─────────────────────────────────────
   setInterval(() => {
+    if (!G) return;   // guard: G not yet initialized
+    window.G = G;     // keep window.G in sync with module-level G
     tick();
-    // Keep window.G in sync (G is a module-level let, window.G is a reference)
-    window.G = G;
     renderWateringCan();
     renderCompost();
   }, 1000);
