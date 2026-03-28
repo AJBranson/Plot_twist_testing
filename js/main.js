@@ -15,7 +15,7 @@ import { buildAllAchievements, checkAchievements } from './achievements.js';
 import { cropArt, CROP_THEME, wateringCanCharge, getLevelData, checkLevelUp } from './utils.js';
 
 import {
-  renderAll, renderPlots, renderStorage, renderShop, renderCompost,
+  renderAll, renderPlots, renderPlotsOnly, renderStorage, renderShop, renderCompost,
   renderHeading, renderWateringCan, notify, shakeStat, showFloatLabel,
   openJournal, closeJournal, showJTab, closeConfirm, showConfirm,
 } from './rendering.js';
