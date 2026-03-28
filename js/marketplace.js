@@ -30,7 +30,7 @@ export function renderVegeStand() {
     </button>
     <div id="vege-stand-info">
       <div id="vege-stand-label">🥕 Vege Stand
-        <span style="font-size:10px;font-weight:700;color:var(--text-dim)">sell seeds</span>
+        <span style="font-size:10px;font-weight:700;color:var(--text-dim)">sell exotic seeds</span>
       </div>
       <div id="vege-stand-status" style="font-size:11px;color:var(--text-dim)">
         ${enabled ? (listingCount > 0 ? listingCount + ' listing' + (listingCount!==1?'s':'') + ' active' : 'No active listings') : 'Stand closed'}

@@ -191,6 +191,7 @@ function init() {
     if (!G) return;   // guard: G not yet initialized
     window.G = G;     // keep window.G in sync with module-level G
     tick();
+    renderPlotsOnly();
     renderWateringCan();
     renderCompost();
   }, 1000);
