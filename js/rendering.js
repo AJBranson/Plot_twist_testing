@@ -572,9 +572,10 @@ export function renderCropsTab(earned) {
       return `<div class="${cls}" title="${m.label} (${m.count}×)">${isEarned?m.icon:'·'}</div>`;
     }).join('');
     const unlocked = crop.unlockLevel<=G.level || G.prestige>0 || count>0;
-    html += `<div class="crop-row" style="${unlocked?'':'opacity:0.35'}">
-      <div class="crop-row-left">${artSvg}<div class="crop-row-info"><div class="crop-row-name">${crop.name}</div><div class="crop-row-count">${count} harvest${count!==1?'s':''}</div></div></div>
-      <div class="crop-row-badges">${badges}</div>
+    html += `<div class="crop-journal-row" style="${unlocked?'':'opacity:0.35'}">
+      <div class="crop-journal-art">${artSvg}</div>
+      <div class="crop-journal-info"><div class="crop-journal-name">${crop.name}</div><div class="crop-journal-count">${count} harvest${count!==1?'s':''}</div></div>
+      <div class="crop-journal-badges">${badges}</div>
     </div>`;
   });
   html += '</div>';
