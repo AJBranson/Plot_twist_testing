@@ -937,9 +937,11 @@ button:active { transform: scale(0.95); }
   color: var(--text-dim);
   text-align: center;
   max-width: 52px;
-  white-space: nowrap;
+  width: 52px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .seed-tile.selected .seed-tile-name { color: var(--green-hi); }
