@@ -423,19 +423,38 @@ export function startEditName(which) {
 }
 
 // ── PRESTIGE ──────────────────────────────────────────────
+function preserveExoticInventory() {
+  const preserved = {};
+  Object.entries(G.inventory || {}).forEach(([key, qty]) => {
+    if (!qty) return;
+    const baseKey = key.replace(/_heritage$/, '');
+    if (CROP_MAP[baseKey] && CROP_MAP[baseKey].exotic) {
+      preserved[key] = qty;
+    }
+  });
+  return preserved;
+}
+
 export function doPrestige() {
   if (G.level < 10) { notify('⚠️ Reach Level 10 (Master) to prestige!', 'error'); return; }
   if (G.prestige >= 50) { notify('✨ Maximum prestige (50) already reached!', 'error'); return; }
+
   const nextPrestige = G.prestige + 1;
   const bonus = Math.round(nextPrestige * 10);
+  const exoticProgressCount = G.plots.filter(plot => plot.cropId && CROP_MAP[plot.cropId]?.exotic && (!plot.ready || plot.seeding)).length;
+  const warningText = exoticProgressCount > 0
+    ? `This will reset your farm to level 1 with 2 coins, but EXOTIC crops currently growing or going-to-seed (${exoticProgressCount}) will be lost. Exotic seeds already in storage will be preserved. Market listings are not affected. All harvest coins will permanently earn +${bonus}% more.`
+    : `This resets your farm to level 1 with 2 coins, but ALL harvest coins will permanently earn +${bonus}% more. Exotic seeds already in storage will be preserved. Market listings are not affected.`;
+
   showConfirm(
     `Prestige ${nextPrestige}/50`,
-    `This resets your farm to level 1 with 2 coins, but ALL harvest coins will permanently earn +${bonus}% more.`,
+    warningText,
     () => {
+      const exoticInventory = preserveExoticInventory();
       G.prestige = nextPrestige;
       G.coins = 2; G.totalXP = 0; G.level = 1;
       G.selectedCrop = null; G.shopExpanded = null; G.fertiliseMode = false;
-      G.compostCharges = 5; G.compostLastCharged = 0; G.inventory = {};
+      G.compostCharges = 5; G.compostLastCharged = 0; G.inventory = exoticInventory;
       G.plots = Array.from({length:20}, (_, i) => ({
         idx:i, unlocked:i===0, harvestedCount:0, cropId:null,
         plantedAt:null, ready:false, fertilised:false, seeding:false,
