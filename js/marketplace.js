@@ -1,7 +1,7 @@
 // marketplace.js - Marketplace functionality
 // Uses window.notify and window.renderStorage to avoid circular dep with rendering.js
 
-import { G, saveGame } from './game-state.js';
+import { G, saveGame, ensureVegeStandUnlocked } from './game-state.js';
 import { CROP_MAP } from './constants.js';
 import { CROP_THEME, cropArt, escHtml, timeSince } from './utils.js';
 import { lbClient } from './leaderboard.js';
@@ -19,9 +19,10 @@ export function renderVegeStand() {
   const area = document.getElementById('vege-stand-area');
   if (!area) return;
 
+  ensureVegeStandUnlocked();
   const listings = G.standListings || [];
   const listingCount = listings.length;
-  const enabled = G.standEnabled !== false;
+  const enabled = G.standEnabled !== false || G.standUnlocked;
 
   area.innerHTML = `
     <button id="vege-stand-btn" onclick="openVegeStand()"

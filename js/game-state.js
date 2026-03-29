@@ -78,7 +78,23 @@ export const DEFAULT_STATE = {
   _exoticMishapsFix: 0,
   _exoticNearMisses: 0,
   _heritageCollected: 0,
+  standUnlocked: false,
 };
+
+export function hasUnlockedVegeStand() {
+  if (!G) return false;
+  const exoticInStorage = Object.keys(G.inventory || {}).some(key => CROP_MAP[key]?.exotic);
+  return G.standUnlocked || exoticInStorage || ((G._merchantDealsAccepted || 0) >= 40);
+}
+
+export function ensureVegeStandUnlocked() {
+  if (!G) return;
+  const shouldUnlock = hasUnlockedVegeStand();
+  if (shouldUnlock && !G.standUnlocked) {
+    G.standUnlocked = true;
+    saveGame();
+  }
+}
 
 export let G = null;
 
@@ -116,7 +132,9 @@ export function saveGame() {
       _exoticNearMisses: G._exoticNearMisses || 0,
       _heritageCollected: G._heritageCollected || 0,
       standListings: G.standListings || [],
-      standEnabled: G.standEnabled !== false, standMaxSlots: G.standMaxSlots || 3,
+      standEnabled: G.standEnabled !== false,
+      standUnlocked: G.standUnlocked !== false,
+      standMaxSlots: G.standMaxSlots || 3,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
   } catch(e) {
@@ -163,6 +181,7 @@ export function loadGame() {
       G._heritageCollected = saved._heritageCollected ?? 0;
       G.standListings = saved.standListings ?? [];
       G.standEnabled = saved.standEnabled !== false;
+      G.standUnlocked = saved.standUnlocked !== false;
       G.standMaxSlots = saved.standMaxSlots ?? 3;
       G.fertiliseMode = false;
       if (saved.plots) {

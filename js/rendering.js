@@ -636,7 +636,8 @@ export function renderTipsTab() {
 
   html += '<div style="margin-bottom:6px">';
   html += '<div style="font-size:14px;font-weight:700;color:#60A5FA;margin-bottom:8px">Quick Play Tips</div>';
-  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Keep plots busy, use compost and watering bonuses, and clear low-value crops when inventory is tight. Active play speeds up unlocks and merchant events.</div>';
+  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Keep plots busy, use compost and watering bonuses. Active play speeds up unlocks and merchant events.</div>';
+  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Try to keep at least a small stash of coins, you never know when an unexpected event might occur.</div>';
   html += '</div>';
 
   panel.innerHTML = html;
