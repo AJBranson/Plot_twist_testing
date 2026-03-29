@@ -321,7 +321,8 @@ export function collectSeeds(idx) {
   if (!plot.seedReady || !crop) return;
   const roll = Math.random();
   const qty = roll < 0.45 ? 1 : roll < 0.90 ? 2 : 3;
-  const isHeritage = Math.random() < 0.10;
+  const heritageChance = plot.heritage ? 0.50 : 0.10;
+  const isHeritage = Math.random() < heritageChance;
   const inventoryKey = isHeritage ? crop.id + '_heritage' : crop.id;
   G.inventory[inventoryKey] = (G.inventory[inventoryKey] || 0) + qty;
   G.seedsCollectedTotal = (G.seedsCollectedTotal || 0) + 1;
