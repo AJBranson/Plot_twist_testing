@@ -23,7 +23,7 @@ function showConfirm(t,d,fn){ if (window.showConfirm)  window.showConfirm(t,d,fn
 export function coinsToSatoshis(coins) { return coins * 1000; }
 
 function payWithBSV(satoshis, ref, onSuccess, onFail) {
-  const GAME_BSV_ADDRESS = '1LMaShk9VaQSWrsEYUukuoWMEVAJckrxCM';
+  const GAME_BSV_ADDRESS = '1rdvvikhzjLoGsqurQN6Xhz2CtGDzpuQd';
   if (window.platformSDK && G.walletConnected) {
     window.platformSDK.sendCommand({
       type: 'pay', ref,
