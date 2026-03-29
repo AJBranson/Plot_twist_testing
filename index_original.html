@@ -1835,6 +1835,7 @@ button:active { transform: scale(0.95); }
         <button class="jtab active" onclick="showJTab('crops')" title="Crop Journal — harvest counts &amp; milestone badges for every crop">Crops</button>
         <button class="jtab" onclick="showJTab('farm')" title="Farm Achievements — harvests, coins, plots, levels &amp; prestige milestones">Farm</button>
         <button class="jtab" onclick="showJTab('events')" title="Events &amp; Merchant — random event history, merchant deals &amp; exotic farming achievements">Events</button>
+        <button class="jtab" onclick="showJTab('tips')" title="Tips & strategies for farming, exotic seeds, marketplace, and prestige">Tips</button>
         <button class="jtab" onclick="showJTab('leaderboard')" title="Leaderboard — share your Farm Score &amp; see the top farmers">🏆</button>
         <button class="jtab" id="market-tab-btn" onclick="showJTab('market')" title="Vege Stand Market — browse &amp; buy exotic seeds from other farmers" style="display:none">🥕</button>
       </div>
@@ -1844,6 +1845,7 @@ button:active { transform: scale(0.95); }
       <div id="jtab-crops" class="jtab-panel active"></div>
       <div id="jtab-farm"  class="jtab-panel"></div>
       <div id="jtab-events" class="jtab-panel"></div>
+      <div id="jtab-tips" class="jtab-panel"></div>
       <div id="jtab-leaderboard" class="jtab-panel"></div>
       <div id="jtab-market" class="jtab-panel"></div>
     </div>
@@ -4768,6 +4770,7 @@ function renderJournal() {
   if (_currentJTab === 'crops') renderCropsTab(earned);
   else if (_currentJTab === 'farm') renderFarmTab(earned);
   else if (_currentJTab === 'events') renderEventsTab(earned);
+  else if (_currentJTab === 'tips') renderTipsTab();
   else if (_currentJTab === 'leaderboard') renderLeaderboardTab();
   else if (_currentJTab === 'market') renderMarketTab();
 }
@@ -4906,6 +4909,34 @@ function renderEventsTab(earned) {
     const achs = sec.ids.map(id => evAchs.find(a => a.id === id)).filter(Boolean);
     html += renderAchSection(sec.title, achs, earned);
   });
+  panel.innerHTML = html;
+}
+
+function renderTipsTab() {
+  const panel = document.getElementById('jtab-tips');
+  if (!panel) return;
+
+  let html = '';
+  html += '<div style="margin-bottom:18px">';
+  html += '<div style="font-size:14px;font-weight:700;color:#FFD140;margin-bottom:8px">Market & Exotic Farming Tips</div>';
+  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Keep an eye on the Vege Stand and merchant events for the best exotic seed deals. Exotic seed offers are limited, so save coins and inventory space for high-value crops.</div>';
+  html += '</div>';
+
+  html += '<div style="margin-bottom:18px">';
+  html += '<div style="font-size:14px;font-weight:700;color:#A78BFA;margin-bottom:8px">Exotic Seed Strategy</div>';
+  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Dragon Fruit and Saffron are powerful late-game crops. Preserve exotic seeds across prestiges and only plant them when you can finish the full grow cycle to avoid wasted progress.</div>';
+  html += '</div>';
+
+  html += '<div style="margin-bottom:18px">';
+  html += '<div style="font-size:14px;font-weight:700;color:#6FCF3A;margin-bottom:8px">Prestige & Progress</div>';
+  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Use prestige after you have a strong set of seeds and have earned several level and coin milestones. Prestige boosts future harvests while preserving exotic seeds for a head start.</div>';
+  html += '</div>';
+
+  html += '<div style="margin-bottom:6px">';
+  html += '<div style="font-size:14px;font-weight:700;color:#60A5FA;margin-bottom:8px">Quick Play Tips</div>';
+  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Keep plots busy, use compost and watering can bonuses, and sell crops before inventory fills. The more active your farm, the faster you unlock new levels and merchant events.</div>';
+  html += '</div>';
+
   panel.innerHTML = html;
 }
 

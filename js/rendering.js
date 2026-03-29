@@ -550,6 +550,7 @@ export function renderJournal() {
   if (_currentJTab==='crops') renderCropsTab(earned);
   else if (_currentJTab==='farm') renderFarmTab(earned);
   else if (_currentJTab==='events') renderEventsTab(earned);
+  else if (_currentJTab==='tips') renderTipsTab();
   else if (_currentJTab==='leaderboard') renderLeaderboardTab();
   else if (_currentJTab==='market') renderMarketTab();
 }
@@ -612,6 +613,33 @@ export function renderEventsTab(earned) {
   const panel = document.getElementById('jtab-events');
   if (!panel) return;
   panel.innerHTML = renderAchSection('📢 Event Achievements', ALL_ACHIEVEMENTS.filter(a=>a.category==='events'), earned);
+}
+
+export function renderTipsTab() {
+  const panel = document.getElementById('jtab-tips');
+  if (!panel) return;
+
+  let html = '<div style="margin-bottom:18px">';
+  html += '<div style="font-size:14px;font-weight:700;color:#FFD140;margin-bottom:8px">Market & Exotic Farming Tips</div>';
+  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Watch the Vege Stand and merchant offers closely. Exotic seeds are scarce, so buy or collect them only when you can plant them promptly.</div>';
+  html += '</div>';
+
+  html += '<div style="margin-bottom:18px">';
+  html += '<div style="font-size:14px;font-weight:700;color:#A78BFA;margin-bottom:8px">Exotic Seed Strategy</div>';
+  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Dragon Fruit and Saffron are great late-game crops. Preserve exotic seeds across prestiges and avoid planting them unless you can complete their full grow cycle.</div>';
+  html += '</div>';
+
+  html += '<div style="margin-bottom:18px">';
+  html += '<div style="font-size:14px;font-weight:700;color:#6FCF3A;margin-bottom:8px">Prestige & Progress</div>';
+  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Use prestige after you have strong crop momentum and several high-value harvests. Prestige boosts future progress while letting exotic seeds survive.</div>';
+  html += '</div>';
+
+  html += '<div style="margin-bottom:6px">';
+  html += '<div style="font-size:14px;font-weight:700;color:#60A5FA;margin-bottom:8px">Quick Play Tips</div>';
+  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Keep plots busy, use compost and watering bonuses, and clear low-value crops when inventory is tight. Active play speeds up unlocks and merchant events.</div>';
+  html += '</div>';
+
+  panel.innerHTML = html;
 }
 
 // Confirm modal (replaces native confirm() blocked in iframes)
