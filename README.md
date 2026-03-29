@@ -25,8 +25,16 @@ a prestige system keep every session feeling fresh.
 
 ## Technology
 
-Single HTML file — no frameworks, no build step, no server required.  
-Open `farming_game.html` in any modern browser to play locally.
+Modern vanilla web stack with a modular file structure:
+- `index.html` for the page shell
+- `styles.css` for styles
+- `js/` modules for game logic, rendering, marketplace, state, and utilities
+
+No frameworks and no build step required. Run locally by opening `index.html` in a browser or serving the folder with a static server such as:
+
+```bash
+python3 -m http.server 8000
+```
 
 ## Built on
 
