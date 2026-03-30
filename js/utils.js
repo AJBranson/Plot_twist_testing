@@ -12,30 +12,30 @@ export const COMPOST_CHARGE_SECS = 4 * 60;
 export const COMPOST_MAX_CHARGES = 5;
 
 export const CROP_THEME = {
-  radish:      { bg:'#2A1825', border:'rgba(233,30,99,0.4)' },
-  lettuce:     { bg:'#122212', border:'rgba(76,175,80,0.4)' },
-  spinach:     { bg:'#121F12', border:'rgba(67,160,71,0.4)' },
-  zucchini:    { bg:'#122012', border:'rgba(46,125,50,0.4)' },
-  beans:       { bg:'#182212', border:'rgba(139,195,74,0.4)' },
-  peas:        { bg:'#162312', border:'rgba(102,187,106,0.4)' },
-  cucumber:    { bg:'#112018', border:'rgba(56,142,60,0.4)' },
-  beetroot:    { bg:'#241218', border:'rgba(136,14,79,0.4)' },
-  carrot:      { bg:'#251A0C', border:'rgba(255,152,0,0.4)' },
-  tomato:      { bg:'#280E0E', border:'rgba(244,67,54,0.4)' },
-  capsicum:    { bg:'#252000', border:'rgba(255,214,0,0.4)' },
-  broccoli:    { bg:'#142014', border:'rgba(85,139,47,0.4)' },
-  cabbage:     { bg:'#111F11', border:'rgba(46,125,50,0.4)' },
-  cauliflower: { bg:'#1E1E1E', border:'rgba(200,200,200,0.35)' },
-  sunflower:   { bg:'#252200', border:'rgba(253,216,53,0.4)' },
-  corn:        { bg:'#232100', border:'rgba(249,168,37,0.4)' },
-  onion:       { bg:'#1E0E25', border:'rgba(156,39,176,0.4)' },
-  potato:      { bg:'#1E1510', border:'rgba(121,85,72,0.4)' },
-  pumpkin:     { bg:'#251500', border:'rgba(255,152,0,0.4)' },
-  garlic:      { bg:'#1A1520', border:'rgba(189,189,189,0.35)' },
-  dragonfruit: { bg:'#270D1F', border:'rgba(233,30,99,0.6)',  exotic:true },
-  saffron:     { bg:'#1A0A22', border:'rgba(156,39,176,0.6)', exotic:true },
-  vanilla:     { bg:'#1C1408', border:'rgba(255,193,7,0.5)',  exotic:true },
-  truffle:     { bg:'#0D0D0D', border:'rgba(255,215,0,0.5)',  exotic:true },
+  radish:      { bg:'#3A1A2A', border:'rgba(233,30,99,0.4)' },
+  lettuce:     { bg:'#1A3020', border:'rgba(76,175,80,0.4)' },
+  spinach:     { bg:'#1A2D1A', border:'rgba(67,160,71,0.4)' },
+  zucchini:    { bg:'#1A2E1A', border:'rgba(46,125,50,0.4)' },
+  beans:       { bg:'#223020', border:'rgba(139,195,74,0.4)' },
+  peas:        { bg:'#203020', border:'rgba(102,187,106,0.4)' },
+  cucumber:    { bg:'#182E22', border:'rgba(56,142,60,0.4)' },
+  beetroot:    { bg:'#321822', border:'rgba(136,14,79,0.4)' },
+  carrot:      { bg:'#332514', border:'rgba(255,152,0,0.4)' },
+  tomato:      { bg:'#381616', border:'rgba(244,67,54,0.4)' },
+  capsicum:    { bg:'#332E00', border:'rgba(255,214,0,0.4)' },
+  broccoli:    { bg:'#1E2E1E', border:'rgba(85,139,47,0.4)' },
+  cabbage:     { bg:'#182D18', border:'rgba(46,125,50,0.4)' },
+  cauliflower: { bg:'#2C2C2C', border:'rgba(200,200,200,0.35)' },
+  sunflower:   { bg:'#333000', border:'rgba(253,216,53,0.4)' },
+  corn:        { bg:'#312F00', border:'rgba(249,168,37,0.4)' },
+  onion:       { bg:'#2C1432', border:'rgba(156,39,176,0.4)' },
+  potato:      { bg:'#2C2018', border:'rgba(121,85,72,0.4)' },
+  pumpkin:     { bg:'#332100', border:'rgba(255,152,0,0.4)' },
+  garlic:      { bg:'#28222E', border:'rgba(189,189,189,0.35)' },
+  dragonfruit: { bg:'#35122A', border:'rgba(233,30,99,0.6)',  exotic:true },
+  saffron:     { bg:'#28102E', border:'rgba(156,39,176,0.6)', exotic:true },
+  vanilla:     { bg:'#2A1E0E', border:'rgba(255,193,7,0.5)',  exotic:true },
+  truffle:     { bg:'#1A1A18', border:'rgba(255,215,0,0.5)',  exotic:true },
 };
 
 // ============================================================
@@ -263,15 +263,80 @@ export function makeCropCardSVG(cropId, w, h) {
 
 export function soilSVG(w, h) {
   return `<svg width="${w}" height="${h}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <rect width="100" height="100" fill="#5C3210"/>
-    <rect width="100" height="100" fill="#7A4422" opacity="0.5"/>
-    <line x1="16" y1="8" x2="16" y2="92" stroke="#4A2510" stroke-width="3" opacity="0.45"/>
-    <line x1="32" y1="8" x2="32" y2="92" stroke="#4A2510" stroke-width="3" opacity="0.45"/>
-    <line x1="48" y1="8" x2="48" y2="92" stroke="#4A2510" stroke-width="3" opacity="0.45"/>
-    <line x1="64" y1="8" x2="64" y2="92" stroke="#4A2510" stroke-width="3" opacity="0.45"/>
-    <line x1="80" y1="8" x2="80" y2="92" stroke="#4A2510" stroke-width="3" opacity="0.45"/>
-    <ellipse cx="24" cy="42" rx="5" ry="3" fill="#8B5A2B" opacity="0.5"/>
-    <ellipse cx="55" cy="65" rx="4" ry="2.5" fill="#8B5A2B" opacity="0.4"/>
+    <rect width="100" height="100" fill="#4A2008"/>
+    <rect width="100" height="100" fill="#7A4422" opacity="0.45"/>
+    <!-- Horizontal furrow rows (tilled-field look) -->
+    <rect x="0" y="9"  width="100" height="3.5" fill="#3A1606" opacity="0.55"/>
+    <rect x="0" y="22" width="100" height="3"   fill="#3A1606" opacity="0.50"/>
+    <rect x="0" y="35" width="100" height="3.5" fill="#3A1606" opacity="0.55"/>
+    <rect x="0" y="48" width="100" height="3"   fill="#3A1606" opacity="0.50"/>
+    <rect x="0" y="61" width="100" height="3.5" fill="#3A1606" opacity="0.50"/>
+    <rect x="0" y="74" width="100" height="3"   fill="#3A1606" opacity="0.45"/>
+    <rect x="0" y="87" width="100" height="3"   fill="#3A1606" opacity="0.40"/>
+    <!-- Faint vertical column dividers -->
+    <line x1="25" y1="0" x2="25" y2="100" stroke="#8B5A2B" stroke-width="1" opacity="0.18"/>
+    <line x1="50" y1="0" x2="50" y2="100" stroke="#8B5A2B" stroke-width="1" opacity="0.18"/>
+    <line x1="75" y1="0" x2="75" y2="100" stroke="#8B5A2B" stroke-width="1" opacity="0.18"/>
+    <!-- Scattered pebbles / clods (varied size & opacity) -->
+    <ellipse cx="18" cy="18" rx="4.5" ry="2.5" fill="#8B5A2B" opacity="0.65"/>
+    <ellipse cx="68" cy="10" rx="3"   ry="2"   fill="#9A6535" opacity="0.55"/>
+    <ellipse cx="38" cy="56" rx="5"   ry="3"   fill="#7A4A22" opacity="0.60"/>
+    <ellipse cx="80" cy="45" rx="3.5" ry="2"   fill="#8B5A2B" opacity="0.55"/>
+    <ellipse cx="12" cy="72" rx="4"   ry="2.5" fill="#9A6535" opacity="0.55"/>
+    <ellipse cx="55" cy="83" rx="3"   ry="2"   fill="#7A4A22" opacity="0.50"/>
+    <circle  cx="88" cy="30" r="2.5"            fill="#8B5A2B" opacity="0.50"/>
+    <circle  cx="45" cy="92" r="2"              fill="#7A4A22" opacity="0.45"/>
+    <circle  cx="92" cy="74" r="2"              fill="#9A6535" opacity="0.40"/>
+    <circle  cx="30" cy="31" r="1.5"            fill="#9A6535" opacity="0.45"/>
+    <ellipse cx="62" cy="66" rx="3"   ry="1.8" fill="#8B5A2B" opacity="0.45"/>
+    <!-- Subtle top-light / bottom-shadow strips for depth -->
+    <rect width="100" height="5" fill="#9A6028" opacity="0.18"/>
+    <rect y="95"  width="100" height="5" fill="#2A1204" opacity="0.22"/>
+  </svg>`;
+}
+
+export function seedlingSVG(progress) {
+  const stemTop = 58 - 8 - progress * 26;
+  const lo = 0.35 + progress * 0.65;
+  const ls = 0.4 + progress * 0.6;
+  const ll1x = 30 - ls * 14, ll1cy = stemTop + 16;
+  const lr1x = 30 + ls * 14, lr1cy = stemTop + 16;
+  const upLo = Math.max(0, (progress - 0.35) / 0.65);
+  const ll2x = 30 - ls * 9,  ll2cy = stemTop + 6;
+  const lr2x = 30 + ls * 9,  lr2cy = stemTop + 6;
+  const moundRx = 13 + progress * 4;
+
+  return `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="30" cy="57.5" rx="${moundRx.toFixed(1)}" ry="4" fill="#5C3210" opacity="0.7"/>
+    <path d="M30 58 Q${(28 + progress*3).toFixed(1)} ${(stemTop + 14).toFixed(1)} 30 ${stemTop.toFixed(1)}"
+      fill="none" stroke="#2D6B20" stroke-width="3" stroke-linecap="round"/>
+    <path d="M30 ${(stemTop+14).toFixed(1)} Q${(ll1x-4).toFixed(1)} ${(ll1cy-8).toFixed(1)} ${ll1x.toFixed(1)} ${(ll1cy+3).toFixed(1)} Q${(ll1x+6).toFixed(1)} ${(ll1cy+8).toFixed(1)} 30 ${(stemTop+18).toFixed(1)}Z"
+      fill="#4CAF50" opacity="${lo.toFixed(2)}"/>
+    <path d="M30 ${(stemTop+14).toFixed(1)} Q${(lr1x+4).toFixed(1)} ${(lr1cy-8).toFixed(1)} ${lr1x.toFixed(1)} ${(lr1cy+3).toFixed(1)} Q${(lr1x-6).toFixed(1)} ${(lr1cy+8).toFixed(1)} 30 ${(stemTop+18).toFixed(1)}Z"
+      fill="#66BB6A" opacity="${lo.toFixed(2)}"/>
+    ${upLo > 0 ? `<path d="M30 ${(stemTop+5).toFixed(1)} Q${(ll2x-2).toFixed(1)} ${(ll2cy-6).toFixed(1)} ${ll2x.toFixed(1)} ${(ll2cy+2).toFixed(1)} Q${(ll2x+5).toFixed(1)} ${(ll2cy+6).toFixed(1)} 30 ${(stemTop+8).toFixed(1)}Z"
+      fill="#388E3C" opacity="${(upLo * lo).toFixed(2)}"/>` : ''}
+    ${upLo > 0 ? `<path d="M30 ${(stemTop+5).toFixed(1)} Q${(lr2x+2).toFixed(1)} ${(lr2cy-6).toFixed(1)} ${lr2x.toFixed(1)} ${(lr2cy+2).toFixed(1)} Q${(lr2x-5).toFixed(1)} ${(lr2cy+6).toFixed(1)} 30 ${(stemTop+8).toFixed(1)}Z"
+      fill="#81C784" opacity="${(upLo * lo * 0.85).toFixed(2)}"/>` : ''}
+    <ellipse cx="30" cy="${stemTop.toFixed(1)}" rx="2" ry="${(2.5 - progress*1.5).toFixed(1)}" fill="#1B5E20" opacity="${(lo*0.8).toFixed(2)}"/>
+  </svg>`;
+}
+
+export function progressRingSVG(progress) {
+  const r = 44;
+  const cx = 50, cy = 50;
+  const circ = 2 * Math.PI * r;
+  const offset = circ * (1 - progress);
+  const ringColor = progress < 0.35 ? '#F59E0B'
+                  : progress < 0.70 ? '#84CC16'
+                  : '#6FCF3A';
+  return `<svg class="progress-ring-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle class="progress-ring-bg" cx="${cx}" cy="${cy}" r="${r}" stroke-width="7"/>
+    <circle class="progress-ring-fill" cx="${cx}" cy="${cy}" r="${r}"
+      stroke="${ringColor}"
+      stroke-width="7"
+      stroke-dasharray="${circ.toFixed(2)}"
+      stroke-dashoffset="${offset.toFixed(2)}"/>
   </svg>`;
 }
 

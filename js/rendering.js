@@ -4,7 +4,7 @@ import { G } from './game-state.js';
 import { CROP_MAP, CROPS, EXOTIC_CROPS, LEVELS, PLOT_COSTS, COMPOST_MAX_CHARGES, MARKETPLACE_ENABLED } from './constants.js';
 import { CROP_THEME, cropArt, formatTime, formatBSV, getCurrentLevel, getLevelData, calcFarmScore,
          prestigeMultiplier, wateringCanCharge, compostNextChargeSecs, lockSVG, soilSVG, makeCropCardSVG,
-         isCropUnlocked, WATERING_CAN_CHARGE_SECS } from './utils.js';
+         progressRingSVG, isCropUnlocked, WATERING_CAN_CHARGE_SECS } from './utils.js';
 import { ALL_ACHIEVEMENTS, CROP_MILESTONES, _pendingNewAchievements, clearPendingAchievements } from './achievements.js';
 import { renderVegeStand, renderMarketTab, renderMarketFilterBar, renderMarketSortBar, renderMarketListings } from './marketplace.js';
 import { renderLeaderboardTab, lbUpdateShareBtn } from './leaderboard.js';
@@ -307,10 +307,7 @@ export function renderPlots() {
             <svg width="52" height="52" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">${cropArt(plot.cropId)}</svg>
           </div>
         </div>
-        <svg class="progress-ring-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <circle class="progress-ring-bg" cx="50" cy="50" r="${r}" stroke-width="5"/>
-          <circle class="progress-ring-fill" cx="50" cy="50" r="${r}" stroke-width="5" stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${offset.toFixed(2)}"/>
-        </svg>
+        ${progressRingSVG(progress)}
         ${plot.fertilised?'<div class="plot-fertilised-badge">🌿 +25%</div>':''}
       </div>
       <div class="plot-footer">${isFertTarget?'🌿 Tap to fertilise':`${crop.name} — ${formatTime(remaining)}`}</div>
@@ -326,6 +323,9 @@ export function renderPlotsOnly() {
     const tile = grid.querySelector(`[data-idx="${idx}"]`);
     if (!tile || !plot.cropId || plot.ready || !plot.plantedAt) return;
     const crop = CROP_MAP[plot.cropId];
+
+    tile.classList.toggle('seeding', plot.seeding);
+    tile.classList.toggle('seed-ready', plot.seedReady);
 
     if (plot.seeding) {
       const elapsedFrac = plot.seedingDuration ? Math.min((now - plot.seedingStartedAt) / plot.seedingDuration, 1) : 0;
@@ -358,8 +358,6 @@ export function renderPlotsOnly() {
           : `<div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px"><div style="opacity:0.5;transform:scale(0.7) translateY(4px)"><svg width="52" height="52" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="filter:grayscale(60%)">${cropArt(plot.cropId)}</svg></div><div style="font-size:9px;color:${atRisk?'#FF8C00':'#A78BFA'};font-weight:700">${atRisk?'⚠️ At risk':'🌱 Seeding…'}</div></div>`;
       }
 
-      tile.classList.toggle('seed-ready', plot.seedReady);
-      tile.classList.add('seeding');
       if (plot.seedReady) {
         tile.setAttribute('onclick', `collectSeeds(${idx})`);
       } else {
@@ -381,6 +379,8 @@ export function renderPlotsOnly() {
     const ringFill = tile.querySelector('.progress-ring-fill');
     if (ringFill) {
       const r = 44, circ = 2*Math.PI*r;
+      const ringColor = progress < 0.35 ? '#F59E0B' : progress < 0.70 ? '#84CC16' : '#6FCF3A';
+      ringFill.setAttribute('stroke', ringColor);
       ringFill.setAttribute('stroke-dashoffset', (circ*(1-progress)).toFixed(2));
     }
     const footer = tile.querySelector('.plot-footer');
