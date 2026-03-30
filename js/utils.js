@@ -446,9 +446,9 @@ export function progressRingSVG(progress) {
   const cx = 50, cy = 50;
   const circ = 2 * Math.PI * r;
   const offset = circ * (1 - progress);
-  const ringColor = progress < 0.35 ? '#F59E0B'
-                  : progress < 0.70 ? '#84CC16'
-                  : '#6FCF3A';
+  const ringColor = progress < 0.35 ? '#F59E0B'  // amber  — early
+                  : progress < 0.70 ? '#84CC16'  // lime   — mid 
+                  : '#6FCF3A';                   // green  — nearly ready
   return `<svg class="progress-ring-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <circle class="progress-ring-bg" cx="${cx}" cy="${cy}" r="${r}" stroke-width="7"/>
     <circle class="progress-ring-fill" cx="${cx}" cy="${cy}" r="${r}"
