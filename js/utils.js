@@ -163,96 +163,215 @@ export function cropArt(id) {
     zucchini: `
       <ellipse cx="28" cy="36" rx="10" ry="22" fill="#2E7D32" stroke="#1B5E20" stroke-width="1"/>
       <ellipse cx="28" cy="36" rx="7" ry="19" fill="#4CAF50"/>
-      <ellipse cx="28" cy="14" rx="8" ry="4" fill="#FFEE58"/>`,
+      <line x1="22" y1="20" x2="22" y2="50" stroke="#2E7D32" stroke-width="1" opacity="0.5"/>
+      <line x1="34" y1="20" x2="34" y2="50" stroke="#2E7D32" stroke-width="1" opacity="0.5"/>
+      <ellipse cx="28" cy="14" rx="8" ry="4" fill="#FFEE58"/>
+      <path d="M23 13 Q21 9 23 7" stroke="#4CAF50" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M33 13 Q35 9 33 7" stroke="#4CAF50" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
     beans: `
       <path d="M18 44 Q14 36 16 26 Q20 18 24 22 Q28 18 30 28 Q32 18 36 22 Q40 18 42 26 Q44 36 40 44 Q36 50 28 52 Q20 50 18 44Z" fill="#558B2F" stroke="#33691E" stroke-width="1.5"/>
       <ellipse cx="22" cy="35" rx="3.5" ry="5" fill="#8BC34A"/>
       <ellipse cx="28" cy="33" rx="3.5" ry="5" fill="#9CCC65"/>
-      <ellipse cx="34" cy="35" rx="3.5" ry="5" fill="#8BC34A"/>`,
+      <ellipse cx="34" cy="35" rx="3.5" ry="5" fill="#8BC34A"/>
+      <path d="M28 20 Q29 13 31 9" stroke="#4CAF50" stroke-width="2" fill="none" stroke-linecap="round"/>`,
     peas: `
       <path d="M9 30 Q11 18 21 14 Q37 12 46 22 Q51 30 47 40 Q41 52 28 52 Q15 52 11 42 Q9 37 9 30Z" fill="#4CAF50" stroke="#388E3C" stroke-width="1.5"/>
       <circle cx="19" cy="31" r="5.5" fill="#A5D6A7"/>
       <circle cx="28" cy="29" r="5.5" fill="#A5D6A7"/>
-      <circle cx="37" cy="31" r="5.5" fill="#A5D6A7"/>`,
+      <circle cx="37" cy="31" r="5.5" fill="#A5D6A7"/>
+      <path d="M37 12 Q44 6 48 9" stroke="#388E3C" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
     cucumber: `
       <ellipse cx="28" cy="34" rx="12" ry="21" fill="#388E3C" stroke="#2E7D32" stroke-width="1.5"/>
       <ellipse cx="28" cy="34" rx="9" ry="18" fill="#4CAF50"/>
-      <ellipse cx="28" cy="13" rx="6" ry="3.5" fill="#FFEE58"/>`,
+      <ellipse cx="22" cy="27" r="2.5" fill="#2E7D32" opacity="0.65"/>
+      <ellipse cx="34" cy="29" r="2.5" fill="#2E7D32" opacity="0.65"/>
+      <ellipse cx="21" cy="37" r="2.5" fill="#2E7D32" opacity="0.65"/>
+      <ellipse cx="35" cy="39" r="2.5" fill="#2E7D32" opacity="0.65"/>
+      <ellipse cx="26" cy="45" r="2.5" fill="#2E7D32" opacity="0.65"/>
+      <ellipse cx="28" cy="13" rx="6" ry="3.5" fill="#FFEE58"/>
+      <path d="M22 13 Q20 9 22 7" stroke="#4CAF50" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
     beetroot: `
       <path d="M19 26 Q17 18 21 15 L28 12 L35 15 Q39 18 37 26Z" fill="#4CAF50"/>
       <ellipse cx="21" cy="17" rx="5" ry="9" fill="#388E3C" transform="rotate(-18 21 17)"/>
       <ellipse cx="35" cy="16" rx="5" ry="9" fill="#4CAF50" transform="rotate(14 35 16)"/>
       <ellipse cx="28" cy="38" rx="14" ry="16" fill="#880E4F" stroke="#6A0136" stroke-width="1.5"/>
-      <ellipse cx="28" cy="38" rx="10" ry="12" fill="#AD1457"/>`,
+      <ellipse cx="28" cy="38" rx="10" ry="12" fill="#AD1457"/>
+      <ellipse cx="23" cy="33" rx="4" ry="6" fill="#C2185B" opacity="0.4"/>
+      <path d="M28 53 Q29 57 28 59" stroke="#6A0136" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
     carrot: `
       <rect x="26" y="8" width="4" height="11" rx="2" fill="#388E3C"/>
       <ellipse cx="19" cy="12" rx="7" ry="4" fill="#4CAF50" transform="rotate(-25 19 12)"/>
       <ellipse cx="35" cy="12" rx="7" ry="4" fill="#66BB6A" transform="rotate(25 35 12)"/>
-      <path d="M16 22 Q14 36 28 56 Q42 36 40 22 Q34 18 28 19 Q22 18 16 22Z" fill="#FF9800" stroke="#E65100" stroke-width="1.5"/>`,
+      <ellipse cx="28" cy="8" rx="5" ry="4" fill="#81C784"/>
+      <path d="M16 22 Q14 36 28 56 Q42 36 40 22 Q34 18 28 19 Q22 18 16 22Z" fill="#FF9800" stroke="#E65100" stroke-width="1.5"/>
+      <path d="M20 25 Q19 40 28 54" stroke="#E65100" stroke-width="1" opacity="0.3" fill="none"/>
+      <path d="M36 25 Q37 40 28 54" stroke="#E65100" stroke-width="1" opacity="0.3" fill="none"/>`,
     tomato: `
       <path d="M28 17 Q32 13 34 17 L36 13 Q38 21 34 21 Q38 27 28 50 Q18 27 22 21 Q18 21 20 13 L22 17 Q24 13 28 17Z" fill="#4CAF50"/>
       <circle cx="28" cy="37" r="15" fill="#F44336" stroke="#C62828" stroke-width="1.5"/>
-      <circle cx="28" cy="37" r="10" fill="#EF5350"/>`,
+      <circle cx="28" cy="37" r="10" fill="#EF5350"/>
+      <ellipse cx="23" cy="32" rx="4" ry="5" fill="#E53935" opacity="0.5"/>`,
     capsicum: `
       <rect x="25" y="7" width="6" height="10" rx="3" fill="#388E3C"/>
-      <path d="M18 28 Q20 15 28 13 Q36 15 38 28 Q40 46 34 53 Q31 55 28 54 Q25 55 22 53 Q16 46 18 28Z" fill="#FFEE58" stroke="#FDD835" stroke-width="1.5"/>`,
+      <path d="M10 28 Q10 17 18 15 L24 15 L24 18 Q19 20 18 28 Q16 42 22 50 Q25 54 28 53Z" fill="#FFD600" stroke="#F9A825" stroke-width="1"/>
+      <path d="M46 28 Q46 17 38 15 L32 15 L32 18 Q37 20 38 28 Q40 42 34 50 Q31 54 28 53Z" fill="#FFD600" stroke="#F9A825" stroke-width="1"/>
+      <path d="M18 28 Q20 15 28 13 Q36 15 38 28 Q40 46 34 53 Q31 55 28 54 Q25 55 22 53 Q16 46 18 28Z" fill="#FFEE58" stroke="#FDD835" stroke-width="1.5"/>
+      <ellipse cx="24" cy="32" rx="3" ry="5" fill="#FFF9C4" opacity="0.7"/>`,
     broccoli: `
       <rect x="25" y="37" width="6" height="16" rx="3" fill="#558B2F" stroke="#33691E" stroke-width="1"/>
+      <path d="M22 39 Q16 35 16 27 Q16 19 22 17 L28 17Z" fill="#2E7D32"/>
+      <path d="M34 39 Q40 35 40 27 Q40 19 34 17 L28 17Z" fill="#388E3C"/>
       <circle cx="20" cy="26" r="9" fill="#2E7D32" stroke="#1B5E20" stroke-width="1"/>
       <circle cx="36" cy="26" r="9" fill="#388E3C" stroke="#2E7D32" stroke-width="1"/>
-      <circle cx="28" cy="21" r="11" fill="#4CAF50" stroke="#388E3C" stroke-width="1"/>`,
+      <circle cx="28" cy="21" r="11" fill="#4CAF50" stroke="#388E3C" stroke-width="1"/>
+      <circle cx="22" cy="19" r="5.5" fill="#43A047"/>
+      <circle cx="34" cy="19" r="5.5" fill="#66BB6A"/>
+      <circle cx="28" cy="15" r="5" fill="#81C784"/>`,
     cabbage: `
       <ellipse cx="28" cy="36" rx="18" ry="16" fill="#1B5E20"/>
       <ellipse cx="28" cy="34" rx="16" ry="14" fill="#2E7D32"/>
+      <ellipse cx="28" cy="32" rx="14" ry="12" fill="#388E3C"/>
       <ellipse cx="28" cy="30" rx="12" ry="10" fill="#43A047"/>
-      <ellipse cx="28" cy="24" rx="6" ry="5" fill="#A5D6A7"/>`,
+      <ellipse cx="28" cy="28" rx="10" ry="8.5" fill="#4CAF50"/>
+      <ellipse cx="28" cy="26" rx="8" ry="7" fill="#66BB6A"/>
+      <ellipse cx="28" cy="24" rx="6" ry="5" fill="#A5D6A7"/>
+      <path d="M11 38 Q9 31 14 27 Q9 34 11 40Z" fill="#1B5E20"/>
+      <path d="M45 38 Q47 31 42 27 Q47 34 45 40Z" fill="#1B5E20"/>`,
     cauliflower: `
-      <rect x="25" y="38" width="6" height="15" rx="3" fill="#6D4C41" stroke="#5D4037" stroke-width="1"/>
-      <circle cx="17" cy="33" r="10" fill="#BDBDBD" stroke="#9E9E9E" stroke-width="1"/>
-      <circle cx="39" cy="31" r="10" fill="#BDBDBD" stroke="#9E9E9E" stroke-width="1"/>
-      <circle cx="28" cy="26" r="12" fill="#D0D0D0" stroke="#BDBDBD" stroke-width="1"/>
-      <circle cx="28" cy="17" r="6" fill="#F5F5F5"/>`,
+      <path d="M13 43 Q11 36 15 30 Q11 35 14 43Z" fill="#4CAF50"/>
+      <path d="M43 43 Q45 36 41 30 Q45 35 42 43Z" fill="#4CAF50"/>
+      <ellipse cx="28" cy="45" rx="18" ry="9" fill="#4CAF50"/>
+      <circle cx="20" cy="32" r="9" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/>
+      <circle cx="36" cy="32" r="9" fill="#FAFAFA" stroke="#E0E0E0" stroke-width="1"/>
+      <circle cx="28" cy="28" r="11" fill="#FAFAFA" stroke="#E0E0E0" stroke-width="1"/>
+      <circle cx="21" cy="25" r="6" fill="#F5F5F5"/>
+      <circle cx="35" cy="25" r="6" fill="#FAFAFA"/>
+      <circle cx="28" cy="21" r="7" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+      <circle cx="17" cy="29" r="5.5" fill="#F5F5F5"/>
+      <circle cx="39" cy="29" r="5.5" fill="#FAFAFA"/>`,
     sunflower: `
-      <circle cx="28" cy="34" r="14" fill="#FDD835" stroke="#F9A825" stroke-width="1.5"/>
-      <circle cx="28" cy="34" r="6" fill="#FFD600"/>
-      <line x1="28" y1="8" x2="28" y2="2" stroke="#558B2F" stroke-width="2" stroke-linecap="round"/>`,
+      <rect x="26" y="38" width="4" height="17" rx="2" fill="#558B2F"/>
+      <ellipse cx="21" cy="43" rx="6" ry="4" fill="#4CAF50" transform="rotate(-30 21 43)"/>
+      <ellipse cx="35" cy="45" rx="6" ry="4" fill="#66BB6A" transform="rotate(20 35 45)"/>
+      <circle cx="28" cy="24" r="14" fill="#FDD835" stroke="#FBC02D" stroke-width="2"/>
+      <circle cx="28" cy="24" r="7" fill="#5D4037" stroke="#4E342E" stroke-width="1"/>
+      <circle cx="26" cy="22" r="1.5" fill="#795548"/>
+      <circle cx="30" cy="22" r="1.5" fill="#795548"/>
+      <circle cx="28" cy="26" r="1.5" fill="#795548"/>
+      <line x1="28" y1="8" x2="28" y2="12" stroke="#FDD835" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="28" y1="36" x2="28" y2="40" stroke="#FDD835" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="12" y1="24" x2="16" y2="24" stroke="#FDD835" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="40" y1="24" x2="44" y2="24" stroke="#FDD835" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="17" y1="13" x2="20" y2="16" stroke="#FDD835" stroke-width="2" stroke-linecap="round"/>
+      <line x1="39" y1="13" x2="36" y2="16" stroke="#FDD835" stroke-width="2" stroke-linecap="round"/>
+      <line x1="17" y1="35" x2="20" y2="32" stroke="#FDD835" stroke-width="2" stroke-linecap="round"/>
+      <line x1="39" y1="35" x2="36" y2="32" stroke="#FDD835" stroke-width="2" stroke-linecap="round"/>`,
     corn: `
-      <rect x="26" y="8" width="4" height="38" rx="2" fill="#558B2F" stroke="#33691E" stroke-width="1"/>
-      <ellipse cx="20" cy="24" rx="7.5" ry="4" fill="#FFEE58" stroke="#FBC02D" stroke-width="0.5"/>
-      <ellipse cx="36" cy="24" rx="7.5" ry="4" fill="#FFD600" stroke="#FBC02D" stroke-width="0.5"/>`,
+      <ellipse cx="28" cy="36" rx="12" ry="21" fill="#F9A825" stroke="#F57F17" stroke-width="1.5"/>
+      <ellipse cx="28" cy="36" rx="9" ry="18" fill="#FFD54F"/>
+      <rect x="14" y="16" width="10" height="37" rx="3" fill="#4CAF50" transform="rotate(-14 14 16)"/>
+      <rect x="36" y="16" width="10" height="37" rx="3" fill="#66BB6A" transform="rotate(14 36 16)"/>
+      <circle cx="23" cy="27" r="2.2" fill="#FFF176"/>
+      <circle cx="28" cy="27" r="2.2" fill="#FFF176"/>
+      <circle cx="33" cy="27" r="2.2" fill="#FFF176"/>
+      <circle cx="23" cy="33" r="2.2" fill="#FFF176"/>
+      <circle cx="28" cy="33" r="2.2" fill="#FFF176"/>
+      <circle cx="33" cy="33" r="2.2" fill="#FFF176"/>
+      <circle cx="23" cy="39" r="2.2" fill="#FFF176"/>
+      <circle cx="28" cy="39" r="2.2" fill="#FFF176"/>
+      <circle cx="33" cy="39" r="2.2" fill="#FFF176"/>
+      <circle cx="23" cy="45" r="2.2" fill="#FFD54F"/>
+      <circle cx="28" cy="45" r="2.2" fill="#FFD54F"/>
+      <circle cx="33" cy="45" r="2.2" fill="#FFD54F"/>
+      <path d="M28 15 Q30 10 29 7 Q33 5 35 9" stroke="#A1887F" stroke-width="2" fill="none" stroke-linecap="round"/>`,
     onion: `
-      <path d="M28 12 Q32 9 34 20 Q34 30 28 40 Q22 30 22 20 Q24 9 28 12Z" fill="#9C27B0" stroke="#6A1B9A" stroke-width="1.5"/>
-      <ellipse cx="28" cy="34" rx="12" ry="14" fill="#BA68C8"/>
-      <ellipse cx="28" cy="34" rx="8" ry="10" fill="#CE93D8"/>`,
+      <rect x="25" y="8" width="6" height="11" rx="3" fill="#7CB342"/>
+      <path d="M23 10 Q19 5 21 3" stroke="#9CCC65" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M33 10 Q37 5 35 3" stroke="#9CCC65" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="28" cy="37" rx="17" ry="19" fill="#7B1FA2" stroke="#6A1B9A" stroke-width="1.5"/>
+      <ellipse cx="28" cy="37" rx="12" ry="15" fill="#9C27B0"/>
+      <ellipse cx="28" cy="37" rx="8" ry="11" fill="#BA68C8"/>
+      <ellipse cx="28" cy="37" rx="4" ry="7" fill="#E1BEE7"/>
+      <path d="M19 24 Q28 20 37 24" stroke="#6A1B9A" stroke-width="1" fill="none" opacity="0.5"/>`,
     potato: `
-      <ellipse cx="28" cy="36" rx="16" ry="18" fill="#A1887F" stroke="#795548" stroke-width="1.5"/>
-      <ellipse cx="28" cy="36" rx="13" ry="15" fill="#BCAAA4"/>
-      <path d="M28 12 Q29 8 28 3" stroke="#558B2F" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+      <ellipse cx="28" cy="36" rx="19" ry="17" fill="#795548" stroke="#5D4037" stroke-width="1.5"/>
+      <ellipse cx="28" cy="34" rx="16" ry="14" fill="#8D6E63"/>
+      <ellipse cx="21" cy="29" rx="4.5" ry="3.5" fill="#6D4C41" opacity="0.7"/>
+      <ellipse cx="37" cy="31" rx="3.5" ry="3" fill="#6D4C41" opacity="0.7"/>
+      <ellipse cx="24" cy="43" rx="3.5" ry="3" fill="#6D4C41" opacity="0.7"/>
+      <ellipse cx="35" cy="44" rx="4" ry="3" fill="#6D4C41" opacity="0.7"/>
+      <ellipse cx="19" cy="37" rx="2.5" ry="3.5" fill="#6D4C41" opacity="0.5"/>
+      <path d="M20 28 Q18 23 21 21" stroke="#A5D6A7" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M38 28 Q40 23 38 21" stroke="#A5D6A7" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
     pumpkin: `
-      <path d="M28 18 Q38 18 42 26 Q44 36 40 46 Q32 54 28 54 Q24 54 16 46 Q12 36 14 26 Q18 18 28 18Z" fill="#FF9800" stroke="#E65100" stroke-width="1.5"/>
-      <line x1="28" y1="10" x2="28" y2="3" stroke="#558B2F" stroke-width="2" stroke-linecap="round"/>`,
+      <ellipse cx="28" cy="39" rx="17" ry="15" fill="#FF8F00" stroke="#E65100" stroke-width="1.5"/>
+      <ellipse cx="14" cy="39" rx="8" ry="13" fill="#FFA000" stroke="#E65100" stroke-width="1"/>
+      <ellipse cx="28" cy="39" rx="9" ry="15" fill="#FFB300" stroke="#E65100" stroke-width="1"/>
+      <ellipse cx="42" cy="39" rx="8" ry="13" fill="#FFA000" stroke="#E65100" stroke-width="1"/>
+      <ellipse cx="28" cy="35" rx="16" ry="12" fill="#FFCA28" opacity="0.4"/>
+      <rect x="25" y="21" width="6" height="10" rx="3" fill="#558B2F"/>
+      <path d="M31 24 Q38 17 43 21" fill="none" stroke="#66BB6A" stroke-width="2" stroke-linecap="round"/>`,
     garlic: `
-      <circle cx="22" cy="28" r="8" fill="#E8E8E8" stroke="#BDBDBD" stroke-width="1"/>
-      <circle cx="34" cy="28" r="8" fill="#F5F5F5" stroke="#BDBDBD" stroke-width="1"/>
-      <circle cx="28" cy="18" r="8" fill="#FAFAFA" stroke="#E0E0E0" stroke-width="1"/>
-      <circle cx="28" cy="38" r="8" fill="#E8E8E8" stroke="#BDBDBD" stroke-width="1"/>
-      <path d="M28 10 Q27 5 28 2" stroke="#558B2F" stroke-width="1.5" fill="none" stroke-linecap="round"/>`,
+      <path d="M25 47 Q28 44 28 38 Q28 44 31 47 Q29 53 28 55 Q27 53 25 47Z" fill="#E0E0E0" stroke="#9E9E9E" stroke-width="0.5"/>
+      <ellipse cx="28" cy="35" rx="13" ry="15" fill="#FAFAFA" stroke="#BDBDBD" stroke-width="1"/>
+      <ellipse cx="21" cy="33" rx="5.5" ry="8" fill="#F5F5F5" stroke="#BDBDBD" stroke-width="0.5"/>
+      <ellipse cx="35" cy="33" rx="5.5" ry="8" fill="#F5F5F5" stroke="#BDBDBD" stroke-width="0.5"/>
+      <ellipse cx="28" cy="29" rx="5.5" ry="8" fill="#EEEEEE" stroke="#BDBDBD" stroke-width="0.5"/>
+      <path d="M23 31 Q25 29 27 31 M29 31 Q31 29 33 31" stroke="#9E9E9E" stroke-width="1" fill="none"/>
+      <rect x="25" y="18" width="6" height="13" rx="3" fill="#558B2F"/>`,
     dragonfruit: `
-      <circle cx="28" cy="36" r="16" fill="#E91E63" stroke="#7B1FA2" stroke-width="1.5"/>
-      <circle cx="28" cy="36" r="12" fill="#F06292"/>
-      <path d="M28 12 Q25 7 26 2" stroke="#7B1FA2" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+      <path d="M13 34 Q8 27 11 21 Q15 29 20 33Z" fill="#4CAF50"/>
+      <path d="M43 34 Q48 27 45 21 Q41 29 36 33Z" fill="#66BB6A"/>
+      <path d="M15 44 Q9 41 12 36 Q17 38 20 41Z" fill="#4CAF50"/>
+      <path d="M41 44 Q47 41 44 36 Q39 38 36 41Z" fill="#66BB6A"/>
+      <path d="M19 48 Q14 48 15 44 Q19 45 22 46Z" fill="#388E3C"/>
+      <path d="M37 48 Q42 48 41 44 Q37 45 34 46Z" fill="#388E3C"/>
+      <ellipse cx="28" cy="36" rx="14" ry="17" fill="#E91E63" stroke="#C2185B" stroke-width="1.5"/>
+      <ellipse cx="28" cy="36" rx="9" ry="12" fill="#F48FB1"/>
+      <circle cx="24" cy="30" r="1.8" fill="#212121"/>
+      <circle cx="32" cy="29" r="1.8" fill="#212121"/>
+      <circle cx="22" cy="38" r="1.8" fill="#212121"/>
+      <circle cx="34" cy="37" r="1.8" fill="#212121"/>
+      <circle cx="28" cy="44" r="1.8" fill="#212121"/>
+      <path d="M20 22 Q22 15 28 12 Q34 15 36 22" fill="#E91E63" stroke="#C2185B" stroke-width="1"/>
+      <path d="M23 21 Q25 13 28 10" stroke="#4CAF50" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M33 21 Q31 13 28 10" stroke="#66BB6A" stroke-width="2" fill="none" stroke-linecap="round"/>`,
     saffron: `
-      <circle cx="28" cy="36" r="14" fill="#FFD700" stroke="#FBC02D" stroke-width="1.5"/>
-      <circle cx="28" cy="36" r="10" fill="#FFEE58"/>
-      <path d="M28 8 Q22 7 20 2" stroke="#8B008B" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M28 8 Q34 7 36 2" stroke="#8B008B" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+      <path d="M17 55 Q16 44 21 36" stroke="#558B2F" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M28 55 Q28 45 28 37" stroke="#4CAF50" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M39 55 Q40 44 35 36" stroke="#558B2F" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <ellipse cx="22" cy="30" rx="6" ry="10" fill="#7B1FA2" transform="rotate(-20 22 30)" stroke="#6A1B9A" stroke-width="0.5"/>
+      <ellipse cx="34" cy="30" rx="6" ry="10" fill="#8E24AA" transform="rotate(20 34 30)" stroke="#6A1B9A" stroke-width="0.5"/>
+      <ellipse cx="28" cy="26" rx="6" ry="10" fill="#9C27B0" stroke="#6A1B9A" stroke-width="0.5"/>
+      <ellipse cx="28" cy="30" rx="4" ry="6" fill="#F3E5F5" opacity="0.55"/>
+      <line x1="25" y1="26" x2="23" y2="10" stroke="#FF8F00" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="28" y1="24" x2="28" y2="8" stroke="#FF6F00" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="31" y1="26" x2="33" y2="10" stroke="#FF8F00" stroke-width="2.5" stroke-linecap="round"/>
+      <ellipse cx="23" cy="9" rx="2.5" ry="3.5" fill="#F44336"/>
+      <ellipse cx="28" cy="7" rx="2.5" ry="3.5" fill="#EF5350"/>
+      <ellipse cx="33" cy="9" rx="2.5" ry="3.5" fill="#F44336"/>`,
     vanilla: `
-      <path d="M20 52 Q18 40 20 24 Q22 12 28 10 Q34 12 36 24 Q38 40 36 52" fill="#D4AF37" stroke="#B8860B" stroke-width="1.5"/>
-      <ellipse cx="28" cy="28" rx="5" ry="8" fill="#C4A460"/>`,
+      <path d="M28 55 Q28 44 30 36 Q32 28 29 20" stroke="#5D4037" stroke-width="2.5" fill="none"/>
+      <path d="M30 37 Q39 31 40 22 Q37 15 32 19" stroke="#795548" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="20" cy="44" rx="3.5" ry="13" fill="#4E342E" stroke="#3E2723" stroke-width="1" transform="rotate(-6 20 44)"/>
+      <ellipse cx="36" cy="46" rx="3.5" ry="13" fill="#5D4037" stroke="#3E2723" stroke-width="1" transform="rotate(9 36 46)"/>
+      <ellipse cx="21" cy="16" rx="6" ry="9" fill="#FFFDE7" stroke="#FFF9C4" stroke-width="0.5" transform="rotate(-30 21 16)"/>
+      <ellipse cx="35" cy="16" rx="6" ry="9" fill="#FFFDE7" stroke="#FFF9C4" stroke-width="0.5" transform="rotate(30 35 16)"/>
+      <ellipse cx="28" cy="13" rx="6" ry="8" fill="#FFF9C4" stroke="#FFEE58" stroke-width="0.5"/>
+      <ellipse cx="28" cy="15" rx="3.5" ry="4.5" fill="#FFCC02"/>
+      <ellipse cx="28" cy="15" rx="2" ry="3" fill="#FF8F00"/>
+      <circle cx="27" cy="13" r="1" fill="#FFD740" opacity="0.8"/>`,
     truffle: `
-      <ellipse cx="28" cy="36" rx="16" ry="18" fill="#1A1A1A" stroke="#FFD700" stroke-width="1.5"/>
-      <ellipse cx="28" cy="36" rx="12" ry="14" fill="#2D2D2D"/>
-      <ellipse cx="28" cy="28" r="2.5" fill="#FFD700" opacity="0.6"/>`,
+      <path d="M14 55 Q13 50 16 47" stroke="#6D4C41" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M28 55 Q28 51 27 48" stroke="#5D4037" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M42 55 Q43 50 40 47" stroke="#6D4C41" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="28" cy="44" rx="22" ry="5" fill="#5C3210" stroke="#4A2510" stroke-width="1"/>
+      <ellipse cx="28" cy="34" rx="19" ry="16" fill="#1A1A1A" stroke="#111" stroke-width="1.5"/>
+      <ellipse cx="20" cy="29" rx="6" ry="5" fill="#242424"/>
+      <ellipse cx="35" cy="27" rx="6" ry="5" fill="#2C2C2C"/>
+      <ellipse cx="27" cy="38" rx="6" ry="5" fill="#222"/>
+      <ellipse cx="17" cy="38" rx="5" ry="4" fill="#2C2C2C"/>
+      <ellipse cx="39" cy="37" rx="5" ry="4" fill="#242424"/>`
   };
   return arts[id] || arts.radish;
 }
