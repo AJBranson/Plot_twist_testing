@@ -324,8 +324,50 @@ export function renderPlotsOnly() {
   const now = Date.now();
   G.plots.forEach((plot, idx) => {
     const tile = grid.querySelector(`[data-idx="${idx}"]`);
-    if (!tile || !plot.cropId || plot.ready || !plot.plantedAt || plot.seeding) return;
+    if (!tile || !plot.cropId || plot.ready || !plot.plantedAt) return;
     const crop = CROP_MAP[plot.cropId];
+
+    if (plot.seeding) {
+      const elapsedFrac = plot.seedingDuration ? Math.min((now - plot.seedingStartedAt) / plot.seedingDuration, 1) : 0;
+      const remaining2 = plot.seedingDuration ? Math.max((plot.seedingDuration - (now - plot.seedingStartedAt)) / 1000, 0) : 0;
+      const atRisk = elapsedFrac >= 0.5;
+      const r2 = 44, circ2 = 2*Math.PI*r2;
+      const offset2 = circ2 * (1 - elapsedFrac);
+      const ringColour = plot.seedReady ? '#FFD700' : atRisk ? '#FF8C00' : '#A78BFA';
+
+      const ringFill = tile.querySelector('.progress-ring-fill');
+      if (ringFill) {
+        ringFill.setAttribute('stroke', ringColour);
+        ringFill.setAttribute('stroke-dashoffset', offset2.toFixed(2));
+      }
+
+      const footer = tile.querySelector('.plot-footer');
+      if (footer) {
+        footer.textContent = plot.seedReady
+          ? '🌱 Tap to collect seeds'
+          : atRisk
+            ? `Seeding ⚠️ ${formatTime(remaining2)}`
+            : `Going to seed… ${formatTime(remaining2)}`;
+        footer.style.color = plot.seedReady ? '#FFD700' : atRisk ? '#FF8C00' : 'var(--text-dim)';
+      }
+
+      const overlay = tile.querySelector('.plot-overlay');
+      if (overlay) {
+        overlay.innerHTML = plot.seedReady
+          ? `<div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px"><div style="font-size:28px;filter:drop-shadow(0 0 6px gold)">🌱</div><div style="font-size:9px;color:#FFD700;font-weight:800">Seeds Ready!</div></div>`
+          : `<div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px"><div style="opacity:0.5;transform:scale(0.7) translateY(4px)"><svg width="52" height="52" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="filter:grayscale(60%)">${cropArt(plot.cropId)}</svg></div><div style="font-size:9px;color:${atRisk?'#FF8C00':'#A78BFA'};font-weight:700">${atRisk?'⚠️ At risk':'🌱 Seeding…'}</div></div>`;
+      }
+
+      tile.classList.toggle('seed-ready', plot.seedReady);
+      tile.classList.add('seeding');
+      if (plot.seedReady) {
+        tile.setAttribute('onclick', `collectSeeds(${idx})`);
+      } else {
+        tile.removeAttribute('onclick');
+      }
+      return;
+    }
+
     const elapsed = now - plot.plantedAt;
     const progress = Math.min(elapsed / (crop.gameSecs * 1000), 1);
     const remaining = Math.max(crop.gameSecs - elapsed/1000, 0);
