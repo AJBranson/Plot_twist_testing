@@ -83,7 +83,12 @@ export const DEFAULT_STATE = {
 
 export function hasUnlockedVegeStand() {
   if (!G) return false;
-  const exoticInStorage = Object.keys(G.inventory || {}).some(key => CROP_MAP[key]?.exotic);
+  const exoticInStorage = Object.keys(G.inventory || {}).some(key => {
+    const count = G.inventory[key] || 0;
+    if (count <= 0) return false;
+    const baseKey = key.replace(/_heritage$/, '');
+    return CROP_MAP[baseKey]?.exotic;
+  });
   return G.standUnlocked || exoticInStorage || ((G._merchantDealsAccepted || 0) >= 40);
 }
 

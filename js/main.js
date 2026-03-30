@@ -31,7 +31,8 @@ import {
 
 import { lbShareScore } from './leaderboard.js';
 import { setMarketFilter, setMarketSort, refreshMarket, executePurchase,
-         listSeeds, cancelListing, showBuyConfirm } from './marketplace.js';
+         listSeeds, cancelListing, showBuyConfirm, openVegeStand,
+         toggleStandOpen, showListingModal, updateListingModal, changeListingQty, confirmListing } from './marketplace.js';
 
 // ── Expose window globals ─────────────────────────────────
 // Rendering helpers (used by game.js via window.*)
@@ -113,7 +114,12 @@ window.executePurchase    = executePurchase;
 window.listSeeds          = listSeeds;
 window.cancelListing      = cancelListing;
 window.showBuyConfirm     = showBuyConfirm;
-
+window.openVegeStand      = openVegeStand;
+window.toggleStandOpen    = toggleStandOpen;
+window.showListingModal   = showListingModal;
+window.updateListingModal = updateListingModal;
+window.changeListingQty   = changeListingQty;
+window.confirmListing     = confirmListing;
 // ── Initialization ────────────────────────────────────────
 function init() {
   // Wire deferred UI handlers (breaks circular game-state ↔ rendering)
