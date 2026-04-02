@@ -931,6 +931,12 @@ lbShareScore() → lbSubmitScore() \[Supabase upsert\] → create-post
 - G is the global game state object. Always call saveGame() after
   mutating G.
 
+- saveGame()/loadGame() now verify browser storage availability and
+  recover safely from corrupted save data before falling back to defaults.
+
+- Wallet integration validates Metanet SDK APIs before sending a
+  connection request and registers the platform event listener only once.
+
 - CROP_MAP contains both CROPS and EXOTIC_CROPS. Inventory keys for
   heritage seeds end in \_heritage.
 

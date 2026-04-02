@@ -30,12 +30,16 @@
 - Watering can, compost, prestige, random events, merchant deals.
 - Exotic seed-saving mechanic with seed phase and mishap events.
 - Metanet.page BSV wallet integration and Supabase leaderboard support.
+- Robust save/load persistence with localStorage availability checks and
+  corrupted data recovery.
+- Improved wallet edge-case handling with Metanet SDK validation and
+  single listener registration.
 - Crop journal, achievements, leaderboard UI.
 - Modular JS architecture with explicit `window` export wiring.
 
 ## Notes for next continuation
 
-- Confirm the actual in-game `localStorage` save key and persistence logic across modules.
+- Confirm the actual in-game `localStorage` save key and persistence logic across modules, including storage availability handling.
 - Review `game_design_v7.md` to ensure all v7 references are coherent.
 - Check `README.md` for any additional project structure updates needed.
 - Evaluate whether the legacy single-file version still exists and if it should be preserved.
