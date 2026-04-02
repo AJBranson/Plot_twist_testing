@@ -47,6 +47,11 @@ function isStorageAvailable() {
   }
 }
 
+// Exposed helper for debugging and tests.
+export function getSaveKey() {
+  return SAVE_KEY;
+}
+
 // Global event/merchant timers
 let _nextEventTime = 0;
 let _nextMerchantTime = 0;

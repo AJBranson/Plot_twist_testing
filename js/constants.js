@@ -58,7 +58,12 @@ export const LEVELS = [
 
 export const PLOT_COSTS = [0,25,55,100,160,240,340,460,620,820,1050,1350,1700,2100,2600,3200,3900,4700,5700,6800];
 export const COMPOST_MAX_CHARGES = 5;
+
+// localStorage save key for game state persistence.
+// Keep this value stable across releases to support automatic upgrades.
+// If you change it deliberately, existing users will start from a fresh save.
 export const SAVE_KEY = 'idle_farm_v1';
+
 export const MARKET_CACHE_TTL = 30000;
 
 export const LB_CONFIG = {

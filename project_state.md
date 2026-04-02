@@ -42,7 +42,7 @@
 - Confirm the actual in-game `localStorage` save key and persistence logic across modules, including storage availability handling.
 - Review `game_design_v7.md` to ensure all v7 references are coherent.
 - Check `README.md` for any additional project structure updates needed.
-- Evaluate whether the legacy single-file version still exists and if it should be preserved.
+- Confirmed the legacy single-file version has been replaced; no preservation needed.
 - Possible improvements:
   - polish marketplace / vege stand UX
   - add more achievements or seasonal content

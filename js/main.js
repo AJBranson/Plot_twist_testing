@@ -7,7 +7,7 @@
 // ============================================================
 
 import { MARKETPLACE_ENABLED } from './constants.js';
-import { G, loadGame, saveGame, setUIHandlers, scheduleNextEvent,
+import { G, loadGame, saveGame, DEFAULT_STATE, setUIHandlers, scheduleNextEvent,
          scheduleNextMerchant, restoreMerchantIfActive, tick,
          acceptMerchantDeal, dismissMerchant } from './game-state.js';
 import { connectWallet, disconnectWallet } from './wallet.js';
@@ -126,6 +126,15 @@ function init() {
   setUIHandlers(notify, renderAll, renderPlots, checkAchievements);
 
   loadGame();
+
+  // Integration sanity check: ensure module and window states stay in sync.
+  if (!G) {
+    console.warn('loadGame returned null/undefined; initializing default state.');
+    G = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  }
+  if (window.G !== G) {
+    window.G = G;
+  }
 
   // Now G is populated — expose on window for constants.js callbacks
   window.G = G;
