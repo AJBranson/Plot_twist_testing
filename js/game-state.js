@@ -2,7 +2,7 @@
 // GAME STATE MANAGEMENT
 // ============================================================
 
-import { SAVE_KEY, CROP_MAP, EVENT_MIN_GAP, EVENT_MAX_GAP, RANDOM_EVENTS,
+import { SAVE_KEY, COMPOST_MAX_CHARGES, CROP_MAP, EVENT_MIN_GAP, EVENT_MAX_GAP, RANDOM_EVENTS,
          MERCHANT_MIN_GAP, MERCHANT_MAX_GAP, MERCHANT_DURATION, MERCHANT_DEALS } from './constants.js';
 import { getLevelData, checkLevelUp, formatTime } from './utils.js';
 
@@ -27,6 +27,25 @@ export function notify(msg, type) {
 function renderAll() { if (_renderAllFn) _renderAllFn(); }
 function renderPlots() { if (_renderPlotsFn) _renderPlotsFn(); }
 function checkAchievements() { if (_checkAchievementsFn) _checkAchievementsFn(); }
+
+function safeParseJSON(raw, fallback = null) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+}
+
+function isStorageAvailable() {
+  try {
+    const testKey = '__pt_save_test__';
+    localStorage.setItem(testKey, testKey);
+    localStorage.removeItem(testKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 // Global event/merchant timers
 let _nextEventTime = 0;
@@ -67,7 +86,7 @@ export const DEFAULT_STATE = {
   merchantDeal: null,
   merchantExpiry: 0,
   wateringCanLastUsed: 0,
-  compostCharges: 5,
+  compostCharges: COMPOST_MAX_CHARGES,
   compostLastCharged: 0,
   fertiliseMode: false,
   standListings: [],
@@ -107,6 +126,15 @@ export let G = null;
 // PERSISTENCE
 // ============================================================
 export function saveGame() {
+  if (!G) {
+    console.warn('saveGame called before state was initialized.');
+    return;
+  }
+  if (!isStorageAvailable()) {
+    notify('⚠️ Browser storage unavailable; progress cannot be saved.', 'error');
+    return;
+  }
+
   try {
     const saveData = {
       coins: G.coins, totalXP: G.totalXP, level: G.level, prestige: G.prestige,
@@ -130,7 +158,7 @@ export function saveGame() {
       _sunBonusCount: G._sunBonusCount || 0,
       _beeBoostCount: G._beeBoostCount || 0,
       wateringCanLastUsed: G.wateringCanLastUsed,
-      compostCharges: G.compostCharges, compostLastCharged: G.compostLastCharged,
+      compostCharges: Math.min(G.compostCharges, COMPOST_MAX_CHARGES), compostLastCharged: G.compostLastCharged,
       seedsCollectedTotal: G.seedsCollectedTotal || 0,
       exoticMishapsTotal: G.exoticMishapsTotal || 0,
       _exoticMishapsFix: G._exoticMishapsFix || 0,
@@ -149,10 +177,24 @@ export function saveGame() {
 }
 
 export function loadGame() {
+  if (!isStorageAvailable()) {
+    notify('⚠️ Browser storage unavailable; progress cannot be loaded.', 'error');
+    G = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    return;
+  }
+
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
-      const saved = JSON.parse(raw);
+      const saved = safeParseJSON(raw);
+      if (!saved) {
+        console.warn('Save data corrupted. Resetting to default state.');
+        localStorage.removeItem(SAVE_KEY);
+        notify('⚠️ Saved data is corrupted. Starting fresh.', 'error');
+        G = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        return;
+      }
+
       G = JSON.parse(JSON.stringify(DEFAULT_STATE));
       G.coins = saved.coins ?? G.coins;
       G.totalXP = saved.totalXP ?? G.totalXP;
@@ -177,7 +219,7 @@ export function loadGame() {
       G._sunBonusCount = saved._sunBonusCount ?? 0;
       G._beeBoostCount = saved._beeBoostCount ?? 0;
       G.wateringCanLastUsed = saved.wateringCanLastUsed ?? 0;
-      G.compostCharges = Math.min(saved.compostCharges ?? 5, 5);
+      G.compostCharges = Math.min(saved.compostCharges ?? COMPOST_MAX_CHARGES, COMPOST_MAX_CHARGES);
       G.compostLastCharged = saved.compostLastCharged ?? 0;
       G.seedsCollectedTotal = saved.seedsCollectedTotal ?? 0;
       G.exoticMishapsTotal = saved.exoticMishapsTotal ?? 0;
@@ -187,9 +229,9 @@ export function loadGame() {
       G.standListings = saved.standListings ?? [];
       G.standEnabled = saved.standEnabled !== false;
       G.standUnlocked = saved.standUnlocked !== false;
-      G.standMaxSlots = saved.standMaxSlots ?? 3;
+      G.standMaxSlots = Number.isInteger(saved.standMaxSlots) ? saved.standMaxSlots : 3;
       G.fertiliseMode = false;
-      if (saved.plots) {
+      if (Array.isArray(saved.plots)) {
         saved.plots.forEach((sp, i) => {
           if (G.plots[i]) Object.assign(G.plots[i], {
             ...sp,
@@ -210,6 +252,7 @@ export function loadGame() {
     console.warn('Load failed:', e);
     notify('⚠️ Could not load saved game. Starting fresh.', 'error');
   }
+
   G = JSON.parse(JSON.stringify(DEFAULT_STATE));
 }
 
@@ -259,11 +302,11 @@ export function tick() {
     });
 
     // Compost recharge
-    if (G.compostCharges < 5 && G.compostLastCharged > 0) {
+    if (G.compostCharges < COMPOST_MAX_CHARGES && G.compostLastCharged > 0) {
       const elapsed = (now - G.compostLastCharged) / 1000;
       if (elapsed >= 4 * 60) {
-        G.compostCharges = Math.min(G.compostCharges + 1, 5);
-        G.compostLastCharged = G.compostCharges < 5 ? now : 0;
+        G.compostCharges = Math.min(G.compostCharges + 1, COMPOST_MAX_CHARGES);
+        G.compostLastCharged = G.compostCharges < COMPOST_MAX_CHARGES ? now : 0;
         changed = true;
       }
     }
