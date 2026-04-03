@@ -39,24 +39,33 @@ export function renderVegeStand() {
     </div>`;
   }).join('');
 
+  const isUnlocked = hasUnlockedVegeStand();
   const emptyMsg = listings.length === 0
-    ? `<div style="font-size:11px;color:var(--text-dim);font-style:italic;padding:3px 0">Stand is empty — list some seeds!</div>`
+    ? `<div style="font-size:11px;color:var(--text-dim);font-style:italic;padding:3px 0">${isUnlocked ? 'Stand is empty — list some seeds!' : '🔒 Unlock the vege stand by obtaining exotic crops or making merchant deals.'}</div>`
     : '';
+
+  const toggleButtonAttrs = isUnlocked 
+    ? `onclick="toggleStandOpen()" style="background:none;border:none;padding:0;cursor:pointer;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));transition:transform 0.15s"` 
+    : `style="background:none;border:none;padding:0;cursor:not-allowed;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));opacity:0.5"`;
+
+  const toggleTitle = isUnlocked
+    ? `${G.standEnabled ? 'Stand is open — click to close' : 'Stand is closed — click to open'}`
+    : '🔒 Vege stand locked — unlock by collecting exotic crops or accepting 40+ merchant deals';
 
   area.innerHTML = `
     <div style="display:flex;align-items:center;gap:14px">
-      <button id="vege-stand-btn" onclick="toggleStandOpen()" style="background:none;border:none;padding:0;cursor:pointer;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));transition:transform 0.15s" title="${G.standEnabled ? 'Stand is open — click to close' : 'Stand is closed — click to open'}">
-        ${vegeSVG(listings.length, G.standEnabled)}
+      <button id="vege-stand-btn" ${toggleButtonAttrs} title="${toggleTitle}">
+        ${vegeSVG(listings.length, G.standEnabled && isUnlocked)}
       </button>
       <div id="vege-stand-info" style="flex:1;min-width:0">
         <div style="font-family:var(--ff-head);font-size:14px;color:var(--text);display:flex;align-items:center;gap:7px;margin-bottom:4px">
           🥕 Vege Stand
-          <span style="font-size:9px;font-weight:700;background:${G.standEnabled ? 'rgba(111,207,58,0.18)' : 'rgba(100,100,100,0.2)'};color:${G.standEnabled ? 'var(--green-hi)' : 'var(--text-dim)'};border-radius:6px;padding:1px 5px">${G.standEnabled ? 'OPEN' : 'CLOSED'}</span>
-          <span style="font-size:10px;color:var(--text-dim);margin-left:2px">${listings.length}/${G.standMaxSlots || 3} slots</span>
+          <span style="font-size:9px;font-weight:700;background:${isUnlocked ? (G.standEnabled ? 'rgba(111,207,58,0.18)' : 'rgba(100,100,100,0.2)') : 'rgba(150,100,50,0.2)'};color:${isUnlocked ? (G.standEnabled ? 'var(--green-hi)' : 'var(--text-dim)') : 'rgba(255,180,100,0.7)'};border-radius:6px;padding:1px 5px">${isUnlocked ? (G.standEnabled ? 'OPEN' : 'CLOSED') : '🔒 LOCKED'}</span>
+          ${isUnlocked ? `<span style="font-size:10px;color:var(--text-dim);margin-left:2px">${listings.length}/${G.standMaxSlots || 3} slots</span>` : `<span style="font-size:10px;color:rgba(255,180,100,0.7);margin-left:2px">Unlock to trade</span>`}
         </div>
         <div id="vege-stand-listings">${listingRowsHtml}${emptyMsg}</div>
-        <button id="list-seeds-btn" onclick="showListingModal()" style="margin-top:5px;background:${canList ? 'rgba(255,209,64,0.15)' : 'rgba(100,100,100,0.1)'};border:1px solid ${canList ? 'rgba(255,209,64,0.4)' : 'rgba(100,100,100,0.2)'};border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;color:${canList ? '#FFD700' : '#666'};cursor:${canList ? 'pointer' : 'not-allowed'}" ${canList ? '' : 'disabled'} title="${!G.walletConnected ? 'Connect wallet to list seeds for BSV' : isFull ? 'Stand is full (3 slots)' : !hasListableSeeds() ? 'No seeds in storage' : 'List seeds for sale'}">
-          + List Seeds${!G.walletConnected ? ' (wallet required)' : isFull ? ' (full)' : ''}
+        <button id="list-seeds-btn" onclick="showListingModal()" style="margin-top:5px;background:${isUnlocked && (G.standListings || []).length < (G.standMaxSlots || 3) && hasListableSeeds() ? 'rgba(255,209,64,0.15)' : 'rgba(100,100,100,0.1)'};border:1px solid ${isUnlocked && (G.standListings || []).length < (G.standMaxSlots || 3) && hasListableSeeds() ? 'rgba(255,209,64,0.4)' : 'rgba(100,100,100,0.2)'};border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;color:${isUnlocked && (G.standListings || []).length < (G.standMaxSlots || 3) && hasListableSeeds() ? '#FFD700' : '#666'};cursor:${isUnlocked && (G.standListings || []).length < (G.standMaxSlots || 3) && hasListableSeeds() ? 'pointer' : 'not-allowed'}" ${isUnlocked && (G.standListings || []).length < (G.standMaxSlots || 3) && hasListableSeeds() ? '' : 'disabled'} title="${!isUnlocked ? '🔒 Vege stand is locked' : !G.walletConnected ? 'Connect wallet to list seeds for BSV' : (G.standListings || []).length >= (G.standMaxSlots || 3) ? 'Stand is full (3 slots)' : !hasListableSeeds() ? 'No seeds in storage' : 'List seeds for sale'}">
+          + List Seeds${!isUnlocked ? ' (locked)' : !G.walletConnected ? ' (wallet required)' : (G.standListings || []).length >= (G.standMaxSlots || 3) ? ' (full)' : ''}
         </button>
       </div>
     </div>`;
@@ -79,6 +88,12 @@ function calcSuggestedPrice(baseCropId, isHeritage, qty) {
 }
 
 export async function toggleStandOpen() {
+  // Guard: only allow toggle if stand is actually unlocked
+  if (!hasUnlockedVegeStand()) {
+    notify('🔒 Unlock the vege stand by collecting exotic crops or accepting 40+ merchant deals.', 'error');
+    return;
+  }
+
   G.standEnabled = !G.standEnabled;
   saveGame();
   renderVegeStand();
@@ -102,6 +117,7 @@ export async function toggleStandOpen() {
 }
 
 export function showListingModal() {
+  if (!hasUnlockedVegeStand()) { notify('🔒 Unlock the vege stand by collecting exotic crops or accepting 40+ merchant deals.', 'error'); return; }
   if (!G.walletConnected) { notify('🔗 Connect your wallet to list seeds!', 'error'); return; }
   if ((G.standListings || []).length >= (G.standMaxSlots || 3)) { notify('🥕 Stand is full — cancel a listing first.', 'error'); return; }
 
