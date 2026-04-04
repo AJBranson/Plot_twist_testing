@@ -1,7 +1,7 @@
 // marketplace.js - Marketplace functionality
 // Uses window.notify and window.renderStorage to avoid circular dep with rendering.js
 
-import { G, saveGame, ensureVegeStandUnlocked } from './game-state.js';
+import { G, saveGame, ensureVegeStandUnlocked, hasUnlockedVegeStand } from './game-state.js';
 import { CROP_MAP } from './constants.js';
 import { CROP_THEME, cropArt, escHtml, timeSince } from './utils.js';
 import { lbClient } from './leaderboard.js';
