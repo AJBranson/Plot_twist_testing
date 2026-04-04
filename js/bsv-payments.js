@@ -2,14 +2,14 @@
 // BSV PAYMENT + BROADCAST HELPERS
 // ============================================================
 
-import { secp256k1 } from 'https://esm.sh/@noble/curves@1.4.2/secp256k1?bundle';
-import { sha256 } from 'https://esm.sh/@noble/hashes@1.4.0/sha256?bundle';
-import { bytesToHex } from 'https://esm.sh/@noble/hashes@1.4.0/utils?bundle';
+import { ec as EC } from 'https://esm.sh/elliptic@6.6.1?bundle';
+import SHA256 from 'https://esm.sh/crypto-js@4.2.0/sha256?bundle';
 import { G } from './game-state.js';
 import { getWalletBroadcastAuth } from './wallet.js';
 
 const METANET_BROADCAST_URL = 'https://api.metanet.ninja/data/api';
 const BSV_PAYMENT_SOURCE = 'plot-twist';
+const ecInstance = new EC('secp256k1');
 
 function notifyPayment(message, type = 'info') {
   if (window.notify) window.notify(message, type);
@@ -54,9 +54,11 @@ async function broadcastRawTransaction(rawTxHex) {
   };
 
   const canonicalPayloadStr = JSON.stringify(payload);
-  const payloadHash = sha256(new TextEncoder().encode(canonicalPayloadStr));
-  const signature = secp256k1.sign(payloadHash, auth.genericUseSeed, { lowS: true }).toDERHex();
-  const publicKeyHex = auth.publicKeyHex || bytesToHex(secp256k1.getPublicKey(auth.genericUseSeed, true));
+  const keyPair = ecInstance.keyFromPrivate(auth.genericUseSeed);
+  const publicKeyHex = keyPair.getPublic(true, 'hex');
+  const hashHex = SHA256(canonicalPayloadStr).toString();
+  const hashBytes = new TextEncoder().encode(hashHex);
+  const signature = keyPair.sign(hashBytes, { canonical: true }).toDER('hex');
 
   const response = await fetch(METANET_BROADCAST_URL, {
     method: 'POST',
