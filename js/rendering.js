@@ -267,7 +267,7 @@ export function renderPlots() {
             </div>
             <svg class="progress-ring-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
               <circle class="progress-ring-bg" cx="50" cy="50" r="${r2}" stroke-width="5"/>
-              <circle class="progress-ring-fill" cx="50" cy="50" r="${r2}" stroke-width="5" stroke="${ringColour}" stroke-dasharray="${circ2.toFixed(2)}" stroke-dashoffset="0"/>
+              <circle class="progress-ring-fill" cx="50" cy="50" r="${r2}" stroke-width="5" style="stroke:${ringColour}" stroke-dasharray="${circ2.toFixed(2)}" stroke-dashoffset="0"/>
             </svg>
           </div>
           <div class="plot-footer" style="color:#FFD700;font-weight:800;font-size:11px">🌱 Tap to collect seeds</div>
@@ -282,7 +282,7 @@ export function renderPlots() {
           </div>
           <svg class="progress-ring-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <circle class="progress-ring-bg" cx="50" cy="50" r="${r2}" stroke-width="5"/>
-            <circle class="progress-ring-fill" cx="50" cy="50" r="${r2}" stroke-width="5" stroke="${ringColour}" stroke-dasharray="${circ2.toFixed(2)}" stroke-dashoffset="${offset2.toFixed(2)}"/>
+            <circle class="progress-ring-fill" cx="50" cy="50" r="${r2}" stroke-width="5" style="stroke:${ringColour}" stroke-dasharray="${circ2.toFixed(2)}" stroke-dashoffset="${offset2.toFixed(2)}"/>
           </svg>
           ${atRisk?'<span style="position:absolute;top:4px;right:4px;font-size:11px">⚠️</span>':''}
         </div>
@@ -337,7 +337,7 @@ export function renderPlotsOnly() {
 
       const ringFill = tile.querySelector('.progress-ring-fill');
       if (ringFill) {
-        ringFill.setAttribute('stroke', ringColour);
+        ringFill.style.stroke = ringColour;
         ringFill.setAttribute('stroke-dashoffset', offset2.toFixed(2));
       }
 
@@ -380,7 +380,7 @@ export function renderPlotsOnly() {
     if (ringFill) {
       const r = 44, circ = 2*Math.PI*r;
       const ringColor = progress < 0.35 ? '#F59E0B' : progress < 0.70 ? '#84CC16' : '#6FCF3A';
-      ringFill.setAttribute('stroke', ringColor);
+      ringFill.style.stroke = ringColor;
       ringFill.setAttribute('stroke-dashoffset', (circ*(1-progress)).toFixed(2));
     }
     const footer = tile.querySelector('.plot-footer');

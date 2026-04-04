@@ -452,7 +452,7 @@ export function progressRingSVG(progress) {
   return `<svg class="progress-ring-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <circle class="progress-ring-bg" cx="${cx}" cy="${cy}" r="${r}" stroke-width="7"/>
     <circle class="progress-ring-fill" cx="${cx}" cy="${cy}" r="${r}"
-      stroke="${ringColor}"
+      style="stroke:${ringColor}"
       stroke-width="7"
       stroke-dasharray="${circ.toFixed(2)}"
       stroke-dashoffset="${offset.toFixed(2)}"/>
