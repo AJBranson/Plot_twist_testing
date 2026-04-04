@@ -48,6 +48,8 @@ function handleConnectionResponse(data) {
 
   const payload = data.payload || {};
   const wallet = payload.wallet;
+  const genericUseSeed = data.genericUseSeed || data.detail?.genericUseSeed || payload.genericUseSeed || null;
+  const publicKeyHex = wallet?.publicKeyHex || data.wallet?.publicKeyHex || null;
 
   if (payload.error) {
     _walletBroadcastAuth = { address: null, publicKeyHex: null, genericUseSeed: null };
@@ -58,9 +60,12 @@ function handleConnectionResponse(data) {
   if (wallet && !payload.anonymous) {
     _walletBroadcastAuth = {
       address: wallet.address || null,
-      publicKeyHex: wallet.publicKeyHex || null,
-      genericUseSeed: payload.genericUseSeed || null,
+      publicKeyHex,
+      genericUseSeed,
     };
+    if (!genericUseSeed) {
+      console.warn('Metanet connection response did not include genericUseSeed; BSV broadcast will not work until this is provided.');
+    }
     updateWalletState(true, wallet.address, '✅ Wallet connected! Cloud save enabled for this wallet.', 'unlock');
     return;
   }
