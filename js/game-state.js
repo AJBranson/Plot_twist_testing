@@ -12,12 +12,14 @@ let _notifyFn = null;
 let _renderAllFn = null;
 let _renderPlotsFn = null;
 let _checkAchievementsFn = null;
+let _chooseSaveConflictFn = null;
 
-export function setUIHandlers(notifyFn, renderAllFn, renderPlotsFn, checkAchievementsFn) {
+export function setUIHandlers(notifyFn, renderAllFn, renderPlotsFn, checkAchievementsFn, chooseSaveConflictFn = null) {
   _notifyFn = notifyFn;
   _renderAllFn = renderAllFn;
   _renderPlotsFn = renderPlotsFn;
   _checkAchievementsFn = checkAchievementsFn;
+  _chooseSaveConflictFn = chooseSaveConflictFn;
 }
 
 export function notify(msg, type) {
@@ -59,6 +61,7 @@ let _activeProfile = 'guest';
 let _lastCloudSaveAt = 0;
 let _lastCloudSaveError = null;
 let _lastCloudLoadError = null;
+const SAVE_CONFLICT_CHOICE_PREFIX = SAVE_KEY + '_conflict_choice_';
 
 export const DEFAULT_STATE = {
   coins: 2,
@@ -162,6 +165,47 @@ function safeLocalRemove(key) {
   } catch {
     // ignore storage cleanup failures
   }
+}
+
+function getSaveConflictChoiceKey(address) {
+  return SAVE_CONFLICT_CHOICE_PREFIX + String(address || '').trim().toLowerCase();
+}
+
+function readSaveConflictChoice(address) {
+  const raw = safeLocalGet(getSaveConflictChoiceKey(address));
+  return raw === 'cloud' || raw === 'local' ? raw : null;
+}
+
+function writeSaveConflictChoice(address, choice) {
+  if (!address || (choice !== 'cloud' && choice !== 'local')) return;
+  safeLocalSet(getSaveConflictChoiceKey(address), choice);
+}
+
+function calcStateScore(state) {
+  if (!state) return 0;
+  return Math.floor(Math.pow(state.level || 1, 2) * 300 + (state.coins || 0) + (state.totalXP || 0) * 0.5);
+}
+
+function normalizeSaveForCompare(saved) {
+  if (!saved) return null;
+  const normalized = JSON.parse(JSON.stringify(saved));
+  delete normalized.walletConnected;
+  delete normalized.walletAddress;
+  return normalized;
+}
+
+function savesDiffer(a, b) {
+  return JSON.stringify(normalizeSaveForCompare(a)) !== JSON.stringify(normalizeSaveForCompare(b));
+}
+
+async function chooseSaveConflict() {
+  if (!_chooseSaveConflictFn) return 'cloud';
+  return _chooseSaveConflictFn(
+    'Choose Save To Use',
+    'We found both a cloud save for this wallet and a local save on this device. Pick which farm should become your wallet save. This choice will be remembered for this wallet on this device.',
+    'Use Cloud Save',
+    'Use This Device Save'
+  );
 }
 
 function buildSaveData(state = G) {
@@ -319,7 +363,7 @@ function hasMeaningfulProgress(state = G) {
   if ((state.totalXP ?? 0) > DEFAULT_STATE.totalXP) return true;
   if ((state.level ?? 1) > DEFAULT_STATE.level) return true;
   if ((state.totalHarvestCount ?? 0) > 0) return true;
-  if ((state.personalBestScore ?? 0) > calcFarmScore()) return true;
+  if ((state.personalBestScore ?? 0) > calcStateScore(state)) return true;
   return state.plots.some((plot, idx) => idx > 0 && (plot.unlocked || plot.harvestedCount > 0 || plot.cropId));
 }
 
@@ -449,6 +493,25 @@ export async function switchToWalletProfile(walletAddress) {
   const cachedWalletSave = readWalletCache(walletAddress);
   const { data: cloudRow, error: cloudError } = await fetchCloudSave(walletAddress);
   _lastCloudLoadError = cloudError ? (cloudError.message || 'Cloud load failed.') : null;
+
+  const hasLocalGuestConflict = !!(cloudRow?.save_data && liveGuestSnapshot && hasMeaningfulProgress(liveGuestSnapshot) && savesDiffer(cloudRow.save_data, liveGuestSnapshot));
+  if (hasLocalGuestConflict) {
+    let choice = readSaveConflictChoice(walletAddress);
+    if (!choice) {
+      const selected = await chooseSaveConflict();
+      choice = selected === 'local' ? 'local' : selected === 'secondary' ? 'local' : 'cloud';
+      writeSaveConflictChoice(walletAddress, choice);
+    }
+
+    if (choice === 'local') {
+      applySaveData(liveGuestSnapshot, { walletConnected: true, walletAddress });
+      _activeProfile = 'wallet';
+      writeWalletCache(walletAddress, buildSaveData());
+      queueCloudSave(buildSaveData());
+      notify('☁️ Using this device farm for your wallet save.', 'unlock');
+      return true;
+    }
+  }
 
   if (cloudRow?.save_data) {
     applySaveData(cloudRow.save_data, { walletConnected: true, walletAddress });

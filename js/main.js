@@ -17,7 +17,7 @@ import { cropArt, CROP_THEME, wateringCanCharge, getLevelData, checkLevelUp } fr
 import {
   renderAll, renderPlots, renderPlotsOnly, renderStorage, renderShop, renderCompost,
   renderHeading, renderWateringCan, notify, shakeStat, showFloatLabel,
-  openJournal, closeJournal, showJTab, closeConfirm, showConfirm,
+  openJournal, closeJournal, showJTab, closeConfirm, showConfirm, showSaveConflictChoice,
 } from './rendering.js';
 
 import {
@@ -123,7 +123,7 @@ window.confirmListing     = confirmListing;
 // ── Initialization ────────────────────────────────────────
 function init() {
   // Wire deferred UI handlers (breaks circular game-state ↔ rendering)
-  setUIHandlers(notify, renderAll, renderPlots, checkAchievements);
+  setUIHandlers(notify, renderAll, renderPlots, checkAchievements, showSaveConflictChoice);
 
   loadGame();
 

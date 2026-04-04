@@ -74,13 +74,31 @@ Implemented in `js/game-state.js` and `js/wallet.js`.
 Key behavior:
 
 1. On wallet connect, the game tries to load the wallet profile in this order:
-   - Supabase cloud save
-   - wallet-specific local cache
-   - current guest farm, if it has meaningful progress
-   - fresh wallet profile if no save exists
+   - if both cloud save and meaningful guest-local save exist and differ, show a one-time choice
+   - otherwise prefer Supabase cloud save
+   - then wallet-specific local cache
+   - then current guest farm, if it has meaningful progress
+   - then fresh wallet profile if no save exists
 2. On wallet disconnect, the game restores the guest-local farm.
 
 This means the player can start immediately in guest mode, then connect later without losing the current guest farm.
+
+### 4a. One-time cloud vs local choice was added
+
+This was added because the game URL is stable for all users on Metanet, so existing local saves should still be available after the update.
+
+Implemented:
+
+1. If both a cloud save and a meaningful guest-local save exist for the same wallet connect flow, the user gets a one-time choice.
+2. Options are:
+   - `Use Cloud Save`
+   - `Use This Device Save`
+3. The choice is remembered per wallet on that device via local storage, so the prompt does not keep appearing.
+4. The prompt only appears when the two saves actually differ.
+
+Current implementation detail:
+
+1. The existing confirm modal is reused for this migration choice.
 
 ### 5. Header/UI status was updated
 

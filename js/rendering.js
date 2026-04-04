@@ -707,6 +707,12 @@ export function renderTipsTab() {
   html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Try to keep at least a small stash of coins, you never know when an unexpected event might occur.</div>';
   html += '</div>';
 
+  html += '<div style="margin-bottom:6px">';
+  html += '<div style="font-size:14px;font-weight:700;color:#60A5FA;margin-bottom:8px">Guest or Wallet Account game saves</div>';
+  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Playing without connecting your wallet, you are playing as a Guest account and the game is only saved in local storage only.</div>';
+  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Playing and connecting your wallet, you will be playing with a Wallet account and your game is saved on a cloud database and accessible from any device using this wallet account.</div>';
+  html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Remember, the Guest and Wallet accounts are separate profiles and hence different games.</div>';
+  html += '</div>';
   panel.innerHTML = html;
 }
 
@@ -714,10 +720,34 @@ export function renderTipsTab() {
 export function showConfirm(title, desc, onOk) {
   document.getElementById('confirm-title').textContent = title;
   document.getElementById('confirm-desc').textContent  = desc;
+  document.getElementById('confirm-ok').textContent = 'Confirm';
+  document.getElementById('confirm-cancel').textContent = 'Cancel';
   document.getElementById('confirm-ok').onclick = () => { closeConfirm(); onOk(); };
+  document.getElementById('confirm-cancel').onclick = () => closeConfirm();
   document.getElementById('confirm-overlay').classList.remove('hidden');
 }
 
+export function showSaveConflictChoice(title, desc, primaryLabel, secondaryLabel) {
+  return new Promise((resolve) => {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-desc').textContent  = desc;
+    document.getElementById('confirm-ok').textContent = primaryLabel;
+    document.getElementById('confirm-cancel').textContent = secondaryLabel;
+    document.getElementById('confirm-ok').onclick = () => {
+      closeConfirm();
+      resolve('cloud');
+    };
+    document.getElementById('confirm-cancel').onclick = () => {
+      closeConfirm();
+      resolve('local');
+    };
+    document.getElementById('confirm-overlay').classList.remove('hidden');
+  });
+}
+
 export function closeConfirm() {
+  document.getElementById('confirm-ok').textContent = 'Confirm';
+  document.getElementById('confirm-cancel').textContent = 'Cancel';
+  document.getElementById('confirm-cancel').onclick = () => closeConfirm();
   document.getElementById('confirm-overlay').classList.add('hidden');
 }
