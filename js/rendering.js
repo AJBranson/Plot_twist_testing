@@ -708,7 +708,7 @@ export function renderTipsTab() {
   html += '</div>';
 
   html += '<div style="margin-bottom:6px">';
-  html += '<div style="font-size:14px;font-weight:700;color:#60A5FA;margin-bottom:8px">Guest or Wallet Account game saves</div>';
+  html += '<div style="font-size:14px;font-weight:700;color:#DC143C;margin-bottom:8px">Guest or Wallet Account game saves</div>';
   html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Playing without connecting your wallet, you are playing as a Guest account and the game is only saved in local storage only.</div>';
   html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Playing and connecting your wallet, you will be playing with a Wallet account and your game is saved on a cloud database and accessible from any device using this wallet account.</div>';
   html += '<div style="font-size:12px;color:#D7E9B9;line-height:1.6;">Remember, the Guest and Wallet accounts are separate profiles and hence different games.</div>';
