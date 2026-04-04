@@ -261,6 +261,15 @@ button:active { transform: scale(0.95); }
 #bsv-status {
   min-width: 0;
   overflow-wrap: anywhere;
+  color: var(--text);
+  font-weight: 800;
+}
+
+#save-mode-status {
+  min-width: 0;
+  font-size: 11px;
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
 }
 
 .bsv-pill button {
