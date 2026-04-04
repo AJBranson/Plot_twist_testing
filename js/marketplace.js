@@ -5,6 +5,7 @@ import { G, saveGame, ensureVegeStandUnlocked, hasUnlockedVegeStand } from './ga
 import { CROP_MAP } from './constants.js';
 import { CROP_THEME, cropArt, escHtml, timeSince } from './utils.js';
 import { lbClient } from './leaderboard.js';
+import { requestBSVPayment } from './bsv-payments.js';
 
 let _marketCache = null;
 let _marketCacheTime = 0;
@@ -429,34 +430,33 @@ export async function executePurchase(btnEl) {
   if (btnEl) { btnEl.disabled = true; btnEl.textContent = '⏳ Paying…'; }
   const ref = 'trade-' + listing.id;
   if (window.platformSDK && G.walletConnected) {
-    window.platformSDK.sendCommand({ type:'pay', ref, recipients:[{ address:listing.seller_address, value:listing.satoshis, note:'Plot Twist Vege Stand: '+(listing.crop_name||'') }] });
-    const _payHandler = async (event) => {
-      const data = event.data;
-      if (!data || data.command !== 'ninja-app-command') return;
-      if (data.type !== 'pay-response' || data.payload.ref !== ref) return;
-      window.removeEventListener('message', _payHandler);
-      if (data.payload.success) {
-        const baseCropId = (listing.crop_id||'').replace('_heritage','');
-        const inventoryKey = listing.heritage ? baseCropId+'_heritage' : baseCropId;
-        G.inventory[inventoryKey] = (G.inventory[inventoryKey]||0) + listing.qty;
-        saveGame();
-        if (window.renderStorage) window.renderStorage();
-        document.getElementById('buy-confirm-overlay')?.remove();
-        window._pendingBuyListing = null;
-        _marketCache = null; _marketCacheTime = 0;
-        if (window.notify) window.notify('🥕 Purchased '+listing.qty+'× '+(listing.crop_name||'')+' — check storage.', 'unlock');
-        const db = lbClient();
-        if (db) {
-          try { await db.from('listings').update({ status:'sold', sold_at:new Date().toISOString(), buyer_address:G.walletAddress }).eq('id', listing.id); } catch(e) {}
-        }
-        const panel = document.getElementById('jtab-market');
-        if (panel && panel.classList.contains('active')) renderMarketTab();
-      } else {
-        if (btnEl) { btnEl.disabled=false; btnEl.textContent='Confirm Buy'; }
-        if (window.notify) window.notify('₿ Purchase failed: '+(data.payload.message||'Payment failed'), 'error');
+    try {
+      const { broadcast } = await requestBSVPayment({
+        ref,
+        recipients: [{ address: listing.seller_address, value: listing.satoshis, note: 'Plot Twist Vege Stand: ' + (listing.crop_name || '') }],
+        pendingMessage: '₿ Awaiting wallet confirmation for marketplace purchase…',
+      });
+      const baseCropId = (listing.crop_id||'').replace('_heritage','');
+      const inventoryKey = listing.heritage ? baseCropId+'_heritage' : baseCropId;
+      G.inventory[inventoryKey] = (G.inventory[inventoryKey]||0) + listing.qty;
+      saveGame();
+      if (window.renderStorage) window.renderStorage();
+      document.getElementById('buy-confirm-overlay')?.remove();
+      window._pendingBuyListing = null;
+      _marketCache = null;
+      _marketCacheTime = 0;
+      const txSuffix = broadcast?.txid ? ' Tx ' + broadcast.txid.slice(0, 8) + '…' : '';
+      if (window.notify) window.notify('🥕 Purchased '+listing.qty+'× '+(listing.crop_name||'')+' — check storage.' + txSuffix, 'unlock');
+      const db = lbClient();
+      if (db) {
+        try { await db.from('listings').update({ status:'sold', sold_at:new Date().toISOString(), buyer_address:G.walletAddress }).eq('id', listing.id); } catch(e) {}
       }
-    };
-    window.addEventListener('message', _payHandler);
+      const panel = document.getElementById('jtab-market');
+      if (panel && panel.classList.contains('active')) renderMarketTab();
+    } catch (error) {
+      if (btnEl) { btnEl.disabled=false; btnEl.textContent='Confirm Buy'; }
+      if (window.notify) window.notify('₿ Purchase failed: ' + (error.message || 'Payment failed'), 'error');
+    }
   } else {
     if (btnEl) { btnEl.disabled=false; btnEl.textContent='Confirm Buy'; }
     if (window.notify) window.notify('₿ Open inside Metanet.page to buy seeds.', 'error');

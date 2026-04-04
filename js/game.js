@@ -7,6 +7,7 @@ import { G, saveGame, calcFarmScore } from './game-state.js';
 import { getLevelData, prestigeMultiplier, canUnlockPlot, formatTime,
          checkLevelUp, isCropUnlocked, formatBSV } from './utils.js';
 import { checkAchievements } from './achievements.js';
+import { requestBSVPayment } from './bsv-payments.js';
 
 // These are set up on window by main.js — avoids circular imports with rendering.js
 function notify(msg, type)  { if (window.notify)      window.notify(msg, type); }
@@ -22,19 +23,16 @@ function showConfirm(t,d,fn){ if (window.showConfirm)  window.showConfirm(t,d,fn
 // ── BSV helpers ───────────────────────────────────────────
 export function coinsToSatoshis(coins) { return coins * 1000; }
 
-function payWithBSV(satoshis, ref, onSuccess, onFail) {
+function payWithBSV(satoshis, ref, note, onSuccess, onFail) {
   const GAME_BSV_ADDRESS = '1rdvvikhzjLoGsqurQN6Xhz2CtGDzpuQd';
   if (window.platformSDK && G.walletConnected) {
-    window.platformSDK.sendCommand({
-      type: 'pay', ref,
+    requestBSVPayment({
+      ref,
       recipients: [{ address: GAME_BSV_ADDRESS, value: satoshis, note: 'Plot Twist purchase' }],
-    });
-    window.platformSDK.onCommand((data) => {
-      if (data.type === 'pay-response' && data.payload.ref === ref) {
-        if (data.payload.success) onSuccess(data.payload);
-        else onFail(data.payload.message || 'Payment failed');
-      }
-    });
+      pendingMessage: note || '₿ Awaiting wallet confirmation…',
+    })
+      .then(onSuccess)
+      .catch((error) => onFail(error.message || 'Payment failed'));
   } else {
     onFail('Wallet not available in dev mode. Use coins instead.');
   }
@@ -127,12 +125,14 @@ export function buySeedsBSV(cropId, qty) {
   const ref = 'seeds-' + cropId + '-' + Date.now();
   const btn = document.getElementById('bsv-btn-' + cropId);
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Paying…'; }
-  payWithBSV(satoshis, ref,
-    () => {
+  payWithBSV(satoshis, ref, '₿ Awaiting wallet confirmation for seed purchase…',
+    ({ broadcast }) => {
       G.inventory[cropId] = (G.inventory[cropId] || 0) + qty;
       G.shopExpanded = null;
+      if (btn) { btn.disabled = false; btn.textContent = '₿ ' + formatBSV(totalCoins); }
       saveGame(); renderAll();
-      notify('₿ Paid ' + formatBSV(totalCoins) + ' — got ' + qty + '× ' + crop.name + '!', 'unlock');
+      const txSuffix = broadcast?.txid ? ' Tx ' + broadcast.txid.slice(0, 8) + '…' : '';
+      notify('₿ Paid ' + formatBSV(totalCoins) + ' — got ' + qty + '× ' + crop.name + '!' + txSuffix, 'unlock');
     },
     (err) => {
       if (btn) { btn.disabled = false; btn.textContent = '₿ ' + formatBSV(totalCoins); }
@@ -201,8 +201,15 @@ export function unlockPlotBSV(idx) {
   if (!G.walletConnected) { notify('🔗 Connect your wallet first to pay with BSV!', 'error'); return; }
   const ref = 'plot-' + idx + '-' + Date.now();
   notify(`₿ Requesting BSV payment for Plot ${idx + 1}…`, 'harvest');
-  payWithBSV(coinsToSatoshis(cost), ref,
-    () => { G.plots[idx].unlocked = true; checkAchievements(); saveGame(); renderAll(); notify(`🔓 Plot ${idx + 1} unlocked with BSV!`, 'unlock'); },
+  payWithBSV(coinsToSatoshis(cost), ref, `₿ Awaiting wallet confirmation for Plot ${idx + 1}…`,
+    ({ broadcast }) => {
+      G.plots[idx].unlocked = true;
+      checkAchievements();
+      saveGame();
+      renderAll();
+      const txSuffix = broadcast?.txid ? ' Tx ' + broadcast.txid.slice(0, 8) + '…' : '';
+      notify(`🔓 Plot ${idx + 1} unlocked with BSV!` + txSuffix, 'unlock');
+    },
     (err) => { notify('₿ BSV payment failed: ' + err, 'error'); }
   );
 }

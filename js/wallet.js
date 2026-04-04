@@ -8,6 +8,11 @@ import { G, saveGame, switchToGuestProfile, switchToWalletProfile } from './game
 // to avoid circular dependency with rendering.js
 
 let _walletListenerRegistered = false;
+let _walletBroadcastAuth = {
+  address: null,
+  publicKeyHex: null,
+  genericUseSeed: null,
+};
 
 function notifyWallet(message, type = 'info') {
   if (window.notify) window.notify(message, type);
@@ -34,6 +39,10 @@ export function isWalletAvailable() {
   return !!(window.platformSDK && typeof window.platformSDK.sendCommand === 'function' && typeof window.platformSDK.onCommand === 'function');
 }
 
+export function getWalletBroadcastAuth() {
+  return { ..._walletBroadcastAuth };
+}
+
 function handleConnectionResponse(data) {
   if (!data || data.type !== 'connection-response') return;
 
@@ -41,15 +50,22 @@ function handleConnectionResponse(data) {
   const wallet = payload.wallet;
 
   if (payload.error) {
+    _walletBroadcastAuth = { address: null, publicKeyHex: null, genericUseSeed: null };
     updateWalletState(false, null, `⚠️ Wallet connection failed: ${payload.error}`, 'error');
     return;
   }
 
   if (wallet && !payload.anonymous) {
+    _walletBroadcastAuth = {
+      address: wallet.address || null,
+      publicKeyHex: wallet.publicKeyHex || null,
+      genericUseSeed: payload.genericUseSeed || null,
+    };
     updateWalletState(true, wallet.address, '✅ Wallet connected! Cloud save enabled for this wallet.', 'unlock');
     return;
   }
 
+  _walletBroadcastAuth = { address: null, publicKeyHex: null, genericUseSeed: null };
   updateWalletState(false, null, '👤 Running in guest mode — progress stays on this device until you connect a wallet.', 'warning');
 }
 
@@ -95,5 +111,6 @@ export function disconnectWallet() {
     return;
   }
 
+  _walletBroadcastAuth = { address: null, publicKeyHex: null, genericUseSeed: null };
   updateWalletState(false, null, '🔌 Wallet disconnected. Guest farm restored on this device.', 'info');
 }

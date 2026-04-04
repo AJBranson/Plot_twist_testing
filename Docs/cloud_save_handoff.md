@@ -132,6 +132,12 @@ Latest known test result:
 5. `index.html`
 6. `styles.css`
 7. `tests/save_load.test.js`
+8. `js/game.js`
+9. `js/marketplace.js`
+
+### Added later during payment follow-up
+
+1. `js/bsv-payments.js`
 
 ## Important Current Behavior
 
@@ -159,6 +165,34 @@ Latest known test result:
 2. The connected wallet farm remains cached locally and should still exist in Supabase if cloud save succeeded.
 
 ## Known Limitations
+
+### 0. BSV payments required explicit broadcast after wallet approval
+
+This issue was found after Metanet tested the game.
+
+Problem:
+
+1. The game handled `pay-response` success.
+2. But it did not broadcast the returned `rawTxHex`.
+3. That meant wallet approval happened, but the transaction was not actually sent to the network.
+
+What was fixed:
+
+1. Added `js/bsv-payments.js`.
+2. Successful BSV payment flows now:
+   - wait for `pay-response`
+   - read `rawTxHex`
+   - sign a Metanet broadcast request
+   - call `https://api.metanet.ninja/data/api`
+   - only grant seeds / unlocks / marketplace purchases after successful broadcast
+3. `wallet.js` now retains `wallet.publicKeyHex` and `payload.genericUseSeed` from `connection-response` for broadcast signing.
+4. `game.js` and `marketplace.js` now use the shared broadcasted-payment helper.
+
+Remaining caution:
+
+1. This depends on `genericUseSeed` being available in the Metanet connection payload as documented.
+2. The new helper uses browser ESM imports from Noble crypto packages via CDN for secp256k1 signing.
+3. Real end-to-end testing inside Metanet.page is still needed to confirm the API accepts the signature format in production.
 
 ### 1. Wallet ownership is not fully hardened yet
 
