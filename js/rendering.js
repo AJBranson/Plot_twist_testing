@@ -1,6 +1,6 @@
 // rendering.js - UI rendering functions
 
-import { G, getPersonalBestScore, syncPersonalBestScore } from './game-state.js';
+import { G, getPersonalBestScore, getPersistenceSummary, syncPersonalBestScore } from './game-state.js';
 import { CROP_MAP, CROPS, EXOTIC_CROPS, LEVELS, PLOT_COSTS, COMPOST_MAX_CHARGES, MARKETPLACE_ENABLED } from './constants.js';
 import { CROP_THEME, cropArt, formatTime, formatBSV, getCurrentLevel, getLevelData, calcFarmScore,
          prestigeMultiplier, wateringCanCharge, compostNextChargeSecs, lockSVG, soilSVG, makeCropCardSVG,
@@ -176,9 +176,11 @@ export function renderStats() {
   }
 
   const bsvStatus = document.getElementById('bsv-status');
+  const saveModeStatus = document.getElementById('save-mode-status');
   const bsvBtn = document.querySelector('#bsv-pill button');
   if (G.walletConnected) {
     if (bsvStatus) bsvStatus.textContent = '₿ ' + G.walletAddress.substring(0,10) + '…';
+    if (saveModeStatus) saveModeStatus.textContent = getPersistenceSummary();
     if (bsvBtn) {
       bsvBtn.textContent = 'Connected ✓';
       bsvBtn.style.background = 'var(--green-hi)';
@@ -188,7 +190,8 @@ export function renderStats() {
       bsvBtn.onclick = () => window.disconnectWallet && window.disconnectWallet();
     }
   } else {
-    if (bsvStatus) bsvStatus.textContent = 'Wallet: Local Mode';
+    if (bsvStatus) bsvStatus.textContent = 'Guest Mode';
+    if (saveModeStatus) saveModeStatus.textContent = getPersistenceSummary();
     if (bsvBtn) {
       bsvBtn.textContent = 'Connect';
       bsvBtn.style.background = '';

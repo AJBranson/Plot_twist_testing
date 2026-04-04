@@ -63,6 +63,9 @@ export const COMPOST_MAX_CHARGES = 5;
 // Keep this value stable across releases to support automatic upgrades.
 // If you change it deliberately, existing users will start from a fresh save.
 export const SAVE_KEY = 'idle_farm_v1';
+export const GUEST_SAVE_KEY = SAVE_KEY + '_guest';
+export const WALLET_SAVE_CACHE_PREFIX = SAVE_KEY + '_wallet_';
+export const CLOUD_SAVE_SCHEMA_VERSION = 1;
 
 export const MARKET_CACHE_TTL = 30000;
 

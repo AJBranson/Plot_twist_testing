@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom';
-import { SAVE_KEY } from '../js/constants.js';
+import { GUEST_SAVE_KEY } from '../js/constants.js';
 import { loadGame, saveGame, DEFAULT_STATE, getSaveKey, G, syncPersonalBestScore } from '../js/game-state.js';
 
 function setupDom() {
@@ -21,7 +21,7 @@ async function testSaveLoadRoundtrip() {
   localStorage.clear();
 
   loadGame();
-  assert(getSaveKey() === SAVE_KEY, 'SAVE_KEY consistency check');
+  assert(getSaveKey() === GUEST_SAVE_KEY, 'guest save key consistency check');
 
   // Should start at default state
   assert(G.coins === DEFAULT_STATE.coins, 'default coins on first load');
@@ -30,7 +30,7 @@ async function testSaveLoadRoundtrip() {
   G.coins = 99;
   G.personalBestScore = 1234;
   saveGame();
-  const raw = localStorage.getItem(SAVE_KEY);
+  const raw = localStorage.getItem(GUEST_SAVE_KEY);
   assert(raw && raw.includes('99'), 'saveGame stored updated coins');
   assert(raw && raw.includes('1234'), 'saveGame stored personal best score');
 
@@ -45,11 +45,11 @@ async function testSaveLoadRoundtrip() {
 async function testCorruptedDataRecovery() {
   setupDom();
 
-  localStorage.setItem(SAVE_KEY, '{ invalid json');
+  localStorage.setItem(GUEST_SAVE_KEY, '{ invalid json');
   loadGame();
 
   assert(G.coins === DEFAULT_STATE.coins, 'corrupted data resets to default state');
-  assert(localStorage.getItem(SAVE_KEY) === null, 'corrupted save entry cleared');
+  assert(localStorage.getItem(GUEST_SAVE_KEY) === null, 'corrupted save entry cleared');
 }
 
 async function testPersonalBestDefaultsToCurrentScore() {

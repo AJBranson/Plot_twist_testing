@@ -2,7 +2,7 @@
 // WALLET INTEGRATION
 // ============================================================
 
-import { G, saveGame } from './game-state.js';
+import { G, saveGame, switchToGuestProfile, switchToWalletProfile } from './game-state.js';
 
 // Uses window.notify and window.renderAll set up by main.js
 // to avoid circular dependency with rendering.js
@@ -14,15 +14,18 @@ function notifyWallet(message, type = 'info') {
   else console.log('[wallet]', message);
 }
 
-function updateWalletState(connected, address = null, notifyMessage = null, notifyType = 'info') {
+async function updateWalletState(connected, address = null, notifyMessage = null, notifyType = 'info') {
   if (!G) {
     console.warn('Wallet state update attempted before game state was initialized.');
     return;
   }
 
-  G.walletConnected = connected;
-  G.walletAddress = address;
-  saveGame();
+  if (connected && address) {
+    await switchToWalletProfile(address);
+  } else {
+    switchToGuestProfile();
+    saveGame();
+  }
   if (window.renderAll) window.renderAll();
   if (notifyMessage) notifyWallet(notifyMessage, notifyType);
 }
@@ -43,11 +46,11 @@ function handleConnectionResponse(data) {
   }
 
   if (wallet && !payload.anonymous) {
-    updateWalletState(true, wallet.address, '✅ Wallet connected!', 'unlock');
+    updateWalletState(true, wallet.address, '✅ Wallet connected! Cloud save enabled for this wallet.', 'unlock');
     return;
   }
 
-  updateWalletState(false, null, '👤 Running anonymously — coins only mode.', 'warning');
+  updateWalletState(false, null, '👤 Running in guest mode — progress stays on this device until you connect a wallet.', 'warning');
 }
 
 export function connectWallet() {
@@ -92,9 +95,5 @@ export function disconnectWallet() {
     return;
   }
 
-  G.walletConnected = false;
-  G.walletAddress = null;
-  saveGame();
-  if (window.renderAll) window.renderAll();
-  notifyWallet('🔌 Wallet disconnected.', 'info');
+  updateWalletState(false, null, '🔌 Wallet disconnected. Guest farm restored on this device.', 'info');
 }
