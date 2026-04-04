@@ -121,6 +121,76 @@ button:active { transform: scale(0.95); }
 .stat-pill .icon { font-size: 15px; }
 .stat-pill.coins .val { color: var(--gold); }
 .stat-pill.score .val { color: #7DD3FC; }
+.stat-pill.score {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 92px;
+}
+
+.stat-pill.score .score-main {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.stat-pill.score .score-best {
+  font-size: 10px;
+  line-height: 1.1;
+  color: var(--text-dim);
+}
+
+.stat-pill.score.personal-best-hit {
+  animation: personal-best-pop 1.8s ease-out;
+  border-color: rgba(255, 209, 64, 0.85);
+  box-shadow: 0 0 0 1px rgba(255, 209, 64, 0.18), 0 0 20px rgba(255, 209, 64, 0.28), 0 0 34px rgba(125, 211, 252, 0.18);
+  background: linear-gradient(180deg, rgba(255, 209, 64, 0.16) 0%, rgba(125, 211, 252, 0.12) 100%);
+}
+
+.stat-pill.score.personal-best-hit .score-main {
+  animation: personal-best-bounce 0.65s ease-out;
+}
+
+.stat-pill.score.personal-best-hit .score-best {
+  color: var(--gold);
+  text-shadow: 0 0 8px rgba(255, 209, 64, 0.45);
+}
+
+.stat-pill.score.personal-best-hit .icon {
+  animation: personal-best-wiggle 0.75s ease-out;
+}
+
+@keyframes personal-best-pop {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(255, 209, 64, 0);
+  }
+  18% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 6px rgba(255, 209, 64, 0.16), 0 0 28px rgba(255, 209, 64, 0.35), 0 0 42px rgba(125, 211, 252, 0.22);
+  }
+  45% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 209, 64, 0), 0 0 0 rgba(255, 209, 64, 0), 0 0 0 rgba(125, 211, 252, 0);
+  }
+}
+
+@keyframes personal-best-bounce {
+  0% { transform: translateY(0) scale(1); }
+  35% { transform: translateY(-2px) scale(1.08); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes personal-best-wiggle {
+  0% { transform: rotate(0deg) scale(1); }
+  20% { transform: rotate(-12deg) scale(1.15); }
+  40% { transform: rotate(12deg) scale(1.2); }
+  60% { transform: rotate(-6deg) scale(1.12); }
+  100% { transform: rotate(0deg) scale(1); }
+}
 
 .level-pill {
   display: flex;

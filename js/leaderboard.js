@@ -1,6 +1,6 @@
 // leaderboard.js - Leaderboard functionality
 
-import { G, calcFarmScore } from './game-state.js';
+import { G, calcFarmScore, getPersonalBestScore } from './game-state.js';
 import { getLevelData, escHtml, timeSince } from './utils.js';
 
 // Uses window.notify to avoid circular dep with rendering.js
@@ -173,6 +173,7 @@ export async function renderLeaderboardTab() {
   if (!panel) return;
   const db = lbClient();
   const score = calcFarmScore();
+  const personalBest = getPersonalBestScore();
   const ld = getLevelData(G.level);
   const myConnected = G.walletConnected && G.walletAddress;
   const presStr = G.prestige > 0 ? ` · Prestige ${G.prestige}` : '';
@@ -181,7 +182,7 @@ export async function renderLeaderboardTab() {
       <div>
         <div class="lb-label">Your Farm Score</div>
         <div class="lb-value">🏆 ${score.toLocaleString()}</div>
-        <div class="lb-sub-val">${ld ? ld.title : ''} · Lv${G.level}${presStr}</div>
+        <div class="lb-sub-val">Best: ${personalBest.toLocaleString()} · ${ld ? ld.title : ''} · Lv${G.level}${presStr}</div>
       </div>
       <div style="text-align:right">
         ${myConnected

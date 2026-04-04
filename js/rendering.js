@@ -1,6 +1,6 @@
 // rendering.js - UI rendering functions
 
-import { G } from './game-state.js';
+import { G, getPersonalBestScore, syncPersonalBestScore } from './game-state.js';
 import { CROP_MAP, CROPS, EXOTIC_CROPS, LEVELS, PLOT_COSTS, COMPOST_MAX_CHARGES, MARKETPLACE_ENABLED } from './constants.js';
 import { CROP_THEME, cropArt, formatTime, formatBSV, getCurrentLevel, getLevelData, calcFarmScore,
          prestigeMultiplier, wateringCanCharge, compostNextChargeSecs, lockSVG, soilSVG, makeCropCardSVG,
@@ -11,6 +11,8 @@ import { renderLeaderboardTab, lbUpdateShareBtn } from './leaderboard.js';
 
 // Journal state
 let _currentJTab = 'crops';
+let _lastPersonalBestPulseToken = 0;
+let _personalBestPulseTimeout = null;
 
 // ============================================================
 // WATERING CAN
@@ -123,6 +125,8 @@ export function renderAll() {
 
 export function renderStats() {
   const ld = getCurrentLevel();
+  const score = calcFarmScore();
+  const personalBest = syncPersonalBestScore({ notifyOnChange: true, queueEffects: true });
   const xpInLevel = G.totalXP - ld.xpMin;
   const xpNeeded = ld.xpMax - ld.xpMin;
   const xpPct = Math.min((xpInLevel / xpNeeded) * 100, 100);
@@ -133,7 +137,25 @@ export function renderStats() {
   document.getElementById('stat-xp').textContent = G.totalXP;
   document.getElementById('stat-xp-max').textContent = ld.xpMax;
   document.getElementById('xp-fill').style.width = xpPct + '%';
-  document.getElementById('stat-score').textContent = calcFarmScore();
+  document.getElementById('stat-score').textContent = score.toLocaleString();
+  const scorePill = document.querySelector('.stat-pill.score');
+  const scoreBest = document.getElementById('stat-score-best');
+  if (scoreBest) {
+    scoreBest.textContent = 'Best ' + getPersonalBestScore().toLocaleString();
+    scoreBest.title = personalBest > score ? 'All-time personal best Farm Score' : 'Current score matches your personal best';
+  }
+  const pulseToken = G._personalBestPulseToken || 0;
+  if (scorePill && pulseToken > _lastPersonalBestPulseToken) {
+    _lastPersonalBestPulseToken = pulseToken;
+    scorePill.classList.remove('personal-best-hit');
+    void scorePill.offsetWidth;
+    scorePill.classList.add('personal-best-hit');
+    if (_personalBestPulseTimeout) clearTimeout(_personalBestPulseTimeout);
+    _personalBestPulseTimeout = setTimeout(() => {
+      scorePill.classList.remove('personal-best-hit');
+      _personalBestPulseTimeout = null;
+    }, 1800);
+  }
 
   const pp = document.getElementById('prestige-pill');
   if (pp) {

@@ -61,6 +61,7 @@ export const DEFAULT_STATE = {
   totalXP: 0,
   level: 1,
   prestige: 0,
+  personalBestScore: 0,
   farmName: 'My Farm',
   farmerName: 'Farmer',
   selectedCrop: null,
@@ -135,6 +136,7 @@ export function saveGame() {
     console.warn('saveGame called before state was initialized.');
     return;
   }
+  syncPersonalBestScore({ notifyOnChange: false, queueEffects: true });
   if (!isStorageAvailable()) {
     notify('⚠️ Browser storage unavailable; progress cannot be saved.', 'error');
     return;
@@ -143,6 +145,7 @@ export function saveGame() {
   try {
     const saveData = {
       coins: G.coins, totalXP: G.totalXP, level: G.level, prestige: G.prestige,
+      personalBestScore: G.personalBestScore,
       farmName: G.farmName, farmerName: G.farmerName, inventory: G.inventory,
       plots: G.plots.map(p => ({
         idx: p.idx, unlocked: p.unlocked, harvestedCount: p.harvestedCount,
@@ -185,6 +188,7 @@ export function loadGame() {
   if (!isStorageAvailable()) {
     notify('⚠️ Browser storage unavailable; progress cannot be loaded.', 'error');
     G = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    syncPersonalBestScore({ notifyOnChange: false, queueEffects: false });
     return;
   }
 
@@ -197,6 +201,7 @@ export function loadGame() {
         localStorage.removeItem(SAVE_KEY);
         notify('⚠️ Saved data is corrupted. Starting fresh.', 'error');
         G = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        syncPersonalBestScore({ notifyOnChange: false, queueEffects: false });
         return;
       }
 
@@ -205,6 +210,7 @@ export function loadGame() {
       G.totalXP = saved.totalXP ?? G.totalXP;
       G.level = saved.level ?? G.level;
       G.prestige = saved.prestige ?? 0;
+      G.personalBestScore = saved.personalBestScore ?? 0;
       G.farmName = saved.farmName ?? 'My Farm';
       G.farmerName = saved.farmerName ?? 'Farmer';
       G.inventory = saved.inventory ?? {};
@@ -251,6 +257,7 @@ export function loadGame() {
       }
       G.selectedCrop = null;
       G.shopExpanded = null;
+      syncPersonalBestScore({ notifyOnChange: false, queueEffects: false });
       return;
     }
   } catch(e) {
@@ -259,6 +266,7 @@ export function loadGame() {
   }
 
   G = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  syncPersonalBestScore({ notifyOnChange: false, queueEffects: false });
 }
 
 // ============================================================
@@ -530,4 +538,26 @@ export function restoreMerchantIfActive() {
 // ============================================================
 export function calcFarmScore() {
   return Math.floor(Math.pow(G.level, 2) * 300 + G.coins * 1 + G.totalXP * 0.5);
+}
+
+export function getPersonalBestScore() {
+  if (!G) return 0;
+  return Math.max(G.personalBestScore || 0, calcFarmScore());
+}
+
+export function syncPersonalBestScore(options = {}) {
+  if (!G) return 0;
+  const { notifyOnChange = false, queueEffects = true } = options;
+  const previousBest = G.personalBestScore || 0;
+  const best = getPersonalBestScore();
+  G.personalBestScore = best;
+  if (best > previousBest && queueEffects) {
+    G._personalBestPulseToken = (G._personalBestPulseToken || 0) + 1;
+    G._personalBestPendingNotify = true;
+  }
+  if (notifyOnChange && G._personalBestPendingNotify) {
+    notify('🏆 New personal best: ' + best.toLocaleString() + '!', 'levelup');
+    G._personalBestPendingNotify = false;
+  }
+  return best;
 }
