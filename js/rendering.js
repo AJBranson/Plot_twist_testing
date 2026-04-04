@@ -530,7 +530,7 @@ export function renderShop() {
       </div>`;
     }).filter(Boolean).join('');
     exoticHtml = `<div class="shop-level-divider" style="background:linear-gradient(90deg,rgba(255,215,0,0.12),rgba(255,215,0,0.04));border-color:rgba(255,215,0,0.3);color:#FFD700">✨ Exotic Seeds</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px;grid-column:1/-1">${exoticCards}</div>`;
+      <div class="shop-exotic-grid">${exoticCards}</div>`;
   }
   list.innerHTML = regularHtml + exoticHtml;
 }
