@@ -2,7 +2,7 @@
 // CORE GAME MECHANICS
 // ============================================================
 
-import { CROPS, CROP_MAP, PLOT_COSTS, LEVELS, SEED_PHASE_RATIO } from './constants.js';
+import { CROPS, CROP_MAP, PLOT_COSTS, LEVELS, SEED_PHASE_RATIO, MISHAP_INSURANCE_COST, MISHAP_INSURANCE_SECS, COMPOST_MAX_CHARGES } from './constants.js';
 import { G, saveGame, calcFarmScore } from './game-state.js';
 import { getLevelData, prestigeMultiplier, canUnlockPlot, formatTime,
          checkLevelUp, isCropUnlocked, formatBSV } from './utils.js';
@@ -50,6 +50,8 @@ export function applyEventModifiers(baseCoins) {
 export function resolveEvent(fix) {
   const { ev, cost } = window._currentEvent || {};
   if (!ev) return;
+  clearTimeout(window._eventTimeout);
+  window._eventTimeout = null;
   window._currentEvent = null;
   document.getElementById('event-overlay').classList.add('hidden');
 
@@ -214,6 +216,35 @@ export function unlockPlotBSV(idx) {
   );
 }
 
+export function buyCompostBSV() {
+  if (!G.walletConnected) { notify('🔗 Connect your wallet first to buy compost with BSV!', 'error'); return; }
+  if (G.compostCharges > 0) { notify('🌿 Compost pile still has charges!', 'info'); return; }
+  const bsvCost = 0.0002;
+  const satoshis = Math.round(bsvCost * 1e8);
+  const ref = 'compost-' + Date.now();
+  showConfirm(
+    '🌿 Buy Compost',
+    'Instantly refill your compost pile to 5 charges for ₿ ' + bsvCost.toFixed(4) + ' BSV?',
+    () => {
+      const btn = document.getElementById('compost-buy-btn');
+      if (btn) { btn.disabled = true; btn.textContent = '⏳ Processing…'; }
+      payWithBSV(satoshis, ref, '₿ Awaiting wallet confirmation for compost purchase…',
+        ({ broadcast }) => {
+          G.compostCharges = COMPOST_MAX_CHARGES;
+          G.compostLastCharged = Date.now();
+          saveGame(); renderAll();
+          const txSuffix = broadcast?.txid ? ' Tx ' + broadcast.txid.slice(0, 8) + '…' : '';
+          notify('🌿 Compost pile refilled with BSV!' + txSuffix, 'unlock');
+        },
+        (err) => {
+          if (btn) { btn.disabled = false; btn.textContent = '₿ Buy Compost — 0.0002 BSV'; }
+          notify('₿ BSV payment failed: ' + err, 'error');
+        }
+      );
+    }
+  );
+}
+
 // ── HARVEST ───────────────────────────────────────────────
 export function harvestCrop(idx) {
   const plot = G.plots[idx];
@@ -364,6 +395,62 @@ export function applyMishapTotal() {
   if (names.length > 0) notify(`💔 Lost all seeding plots: ${names.join(', ')}!`, 'error');
 }
 
+// ── MISHAP INSURANCE ──────────────────────────────────────
+export function isMishapInsured() {
+  return G._mishapInsuranceExpiry > Date.now();
+}
+
+export function getMishapInsuranceRemaining() {
+  if (!isMishapInsured()) return 0;
+  return Math.ceil((G._mishapInsuranceExpiry - Date.now()) / 1000);
+}
+
+export function buyMishapInsurance() {
+  if (getSeedingPlotsAtRisk().length === 0 && !G.plots.some(p => p.seeding)) { notify('⚠️ No seeding plots to insure!', 'error'); return; }
+  if (G.coins < MISHAP_INSURANCE_COST) { notify('⚠️ Not enough coins! Need 🪙' + MISHAP_INSURANCE_COST, 'error'); return; }
+  if (isMishapInsured()) { notify('🛡️ Already insured! ' + formatTime(getMishapInsuranceRemaining()) + ' remaining.', 'info'); return; }
+  showConfirm(
+    '🛡️ Mishap Insurance',
+    'Protect all seeding plots from mishap loss for 30 minutes for 🪙' + MISHAP_INSURANCE_COST + ' coins?',
+    () => {
+      G.coins -= MISHAP_INSURANCE_COST;
+      G._mishapInsuranceExpiry = Date.now() + MISHAP_INSURANCE_SECS * 1000;
+      saveGame(); renderAll();
+      notify('🛡️ Mishap Insurance purchased! All seeding plots protected for 30 minutes.', 'unlock');
+    }
+  );
+}
+
+export function buySpeedBoost() {
+  if (!G.walletConnected) { notify('🔗 Connect your wallet first to buy speed boost with BSV!', 'error'); return; }
+  if (G._speedBoostExpiry > Date.now()) { notify('⚡ Speed boost already active!', 'info'); return; }
+  const bsvCost = 0.01;
+  const satoshis = Math.round(bsvCost * 1e8);
+  const ref = 'speed-' + Date.now();
+  showConfirm(
+    '⚡ Speed Boost',
+    'Speed up your farm 10× for 20 minutes! Crops grow, seed, and recharge 10× faster. Cost: ₿ ' + bsvCost.toFixed(4) + ' BSV?',
+    () => {
+      const btn = document.getElementById('speed-boost-btn');
+      if (btn) { btn.disabled = true; btn.innerHTML = '⏳'; }
+      payWithBSV(satoshis, ref, '₿ Awaiting wallet confirmation for speed boost…',
+        ({ broadcast }) => {
+          G._speedBoostExpiry = Date.now() + 20 * 60 * 1000;
+          saveGame();
+          if (window._restartTick) window._restartTick();
+          renderAll();
+          const txSuffix = broadcast?.txid ? ' Tx ' + broadcast.txid.slice(0, 8) + '…' : '';
+          notify('⚡ Speed Boost activated! 10× farm speed for 20 minutes!' + txSuffix, 'levelup');
+        },
+        (err) => {
+          if (btn) { btn.disabled = false; }
+          notify('₿ BSV payment failed: ' + err, 'error');
+        }
+      );
+    }
+  );
+}
+
 export function showHarvestFork(idx) {
   const plot = G.plots[idx];
   const crop = CROP_MAP[plot.cropId];
@@ -378,7 +465,7 @@ export function showHarvestFork(idx) {
   overlay.innerHTML = `
     <div style="background:var(--bg-panel);border:2px solid rgba(255,215,0,0.4);border-radius:16px;padding:20px;max-width:320px;width:100%;text-align:center">
       <div style="margin-bottom:8px">
-        <svg width="52" height="52" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="background:${bgCol};border-radius:8px;box-shadow:0 0 10px rgba(255,215,0,0.3)">${window._cropArt?.(crop.id)||''}</svg>
+        <svg width="52" height="52" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="background:${bgCol};border-radius:8px;box-shadow:0 0 10px rgba(255,215,0,0.3)">${window._cropArtWithPrestige?.(crop.id, G.prestige)||''}</svg>
       </div>
       <div style="font-family:var(--ff-head);font-size:17px;color:#FFD700;margin-bottom:4px">✨ ${crop.name} Ready!</div>
       <div style="font-size:12px;color:var(--text-dim);margin-bottom:16px">This is an exotic crop — what will you do?</div>

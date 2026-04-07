@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌾 Plot Twist — Dev Tool</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:       #111D0F;
+    --surface:  #182B14;
+    --panel:    #1F3819;
+    --border:   rgba(120,200,60,0.25);
+    --green:    #6FCF3A;
+    --gold:     #FFD140;
+    --red:      #FF5252;
+    --purple:   #A78BFA;
+    --blue:     #60A5FA;
+    --text:     #E8F5DC;
+    --dim:      rgba(232,245,220,0.55);
+    --radius:   10px;
+    --ff:       'Segoe UI', system-ui, sans-serif;
+  }
+  body { font-family: var(--ff); background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; }
+
+  h1 { font-size: 22px; color: var(--gold); margin-bottom: 4px; }
+  .subtitle { font-size: 12px; color: var(--dim); margin-bottom: 20px; }
+
+  .origin-warning {
+    background: rgba(255,82,82,0.12); border: 1px solid var(--red);
+    border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px;
+    font-size: 12px; color: #FF8A80; display: none;
+  }
+
+  .layout { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start; }
+
+  .panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+  }
+  .panel-title {
+    font-size: 12px; font-weight: 700; color: var(--gold);
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+
+  /* Quick actions */
+  .action-group { margin-bottom: 14px; }
+  .action-group-label { font-size: 10px; color: var(--dim); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .action-btn {
+    display: block; width: 100%; text-align: left;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 7px; padding: 7px 10px; margin-bottom: 5px;
+    font-size: 12px; color: var(--text); cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .action-btn:hover { border-color: var(--green); background: rgba(111,207,58,0.08); }
+  .action-btn.gold  { border-color: rgba(255,209,64,0.3); }
+  .action-btn.gold:hover { border-color: var(--gold); background: rgba(255,209,64,0.08); }
+  .action-btn.red   { border-color: rgba(255,82,82,0.3); }
+  .action-btn.red:hover  { border-color: var(--red);  background: rgba(255,82,82,0.08); }
+  .action-btn.purple{ border-color: rgba(167,139,250,0.3); }
+  .action-btn.purple:hover { border-color: var(--purple); background: rgba(167,139,250,0.08); }
+
+  /* Field editor */
+  .field-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .field-row { display: flex; align-items: center; gap: 8px; }
+  .field-label { font-size: 11px; color: var(--dim); width: 160px; flex-shrink: 0; }
+  .field-input {
+    flex: 1; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 8px; font-size: 12px; color: var(--text);
+    font-family: var(--ff);
+  }
+  .field-input:focus { outline: none; border-color: var(--green); }
+  .field-input.wide { width: 100%; }
+
+  /* Inventory builder */
+  .inv-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+  .inv-select {
+    flex: 1; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 8px; font-size: 12px; color: var(--text);
+  }
+  .inv-qty {
+    width: 60px; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 8px; font-size: 12px; color: var(--text); text-align: center;
+  }
+
+  /* Plot grid */
+  .plot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+  .plot-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 7px; padding: 8px; font-size: 10px;
+  }
+  .plot-num { font-weight: 700; color: var(--gold); margin-bottom: 4px; }
+  .plot-status { color: var(--dim); margin-bottom: 4px; min-height: 14px; }
+  .plot-btn {
+    display: block; width: 100%; background: rgba(111,207,58,0.1);
+    border: 1px solid rgba(111,207,58,0.3); border-radius: 5px;
+    padding: 3px 0; font-size: 10px; color: var(--green); cursor: pointer;
+    margin-top: 3px;
+  }
+  .plot-btn:hover { background: rgba(111,207,58,0.2); }
+  .plot-btn.gold-btn { background: rgba(255,209,64,0.1); border-color: rgba(255,209,64,0.3); color: var(--gold); }
+  .plot-btn.gold-btn:hover { background: rgba(255,209,64,0.2); }
+  .plot-btn.red-btn  { background: rgba(255,82,82,0.1);  border-color: rgba(255,82,82,0.3);  color: var(--red); }
+  .plot-btn.red-btn:hover  { background: rgba(255,82,82,0.2); }
+  .plot-select {
+    width: 100%; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 5px; padding: 3px 4px; font-size: 10px; color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  /* JSON editor */
+  .json-area {
+    width: 100%; min-height: 300px; background: #0A120A;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 12px; font-size: 11px; font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    color: #B5E853; resize: vertical; line-height: 1.6;
+  }
+  .json-area:focus { outline: none; border-color: var(--green); }
+
+  /* Buttons row */
+  .btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .btn {
+    padding: 8px 16px; border-radius: 7px; font-size: 12px; font-weight: 700;
+    cursor: pointer; border: 1px solid transparent; transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-green  { background: rgba(111,207,58,0.2);  border-color: var(--green);  color: var(--green); }
+  .btn-gold   { background: rgba(255,209,64,0.15); border-color: var(--gold);   color: var(--gold); }
+  .btn-red    { background: rgba(255,82,82,0.15);  border-color: var(--red);    color: var(--red); }
+  .btn-blue   { background: rgba(96,165,250,0.15); border-color: var(--blue);   color: var(--blue); }
+  .btn-dim    { background: rgba(255,255,255,0.05);border-color: rgba(255,255,255,0.15); color: var(--dim); }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--panel); border: 1px solid var(--green);
+    border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600;
+    color: var(--green); opacity: 0; transition: opacity 0.2s; pointer-events: none;
+    z-index: 999; white-space: nowrap;
+  }
+  #toast.show { opacity: 1; }
+  #toast.error { border-color: var(--red); color: var(--red); }
+
+  .section-sep { height: 1px; background: var(--border); margin: 14px 0; }
+
+  /* Diff view */
+  .diff-box {
+    background: #0A120A; border: 1px solid var(--border); border-radius: 7px;
+    padding: 10px; font-size: 11px; font-family: monospace; color: var(--dim);
+    max-height: 120px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+  }
+</style>
+</head>
+<body>
+
+<h1>🌾 Plot Twist — Dev Tool</h1>
+<p class="subtitle">
+  Save key: <code id="active-save-key"></code> &nbsp;|&nbsp;
+  Origin: <code id="origin-display"></code> &nbsp;|&nbsp;
+  <span id="save-age" style="color:var(--dim)"></span>
+</p>
+
+<div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+  <label style="font-size:11px;color:var(--dim);font-weight:600">Profile:</label>
+  <div id="profile-buttons" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+</div>
+
+<div class="origin-warning" id="origin-warning">
+  ⚠️ <strong>Origin mismatch likely.</strong> This tool and the game must be opened from the same
+  folder using <code>file://</code> URLs (or the same web server domain) for localStorage to be shared.
+</div>
+
+<div class="layout">
+
+  <!-- LEFT: Quick Actions + Field Editor -->
+  <div>
+    <!-- Quick Actions -->
+    <div class="panel" style="margin-bottom:12px">
+      <div class="panel-title">⚡ Quick Actions</div>
+
+      <div class="action-group">
+        <div class="action-group-label">💰 Resources</div>
+        <button class="action-btn gold" onclick="qa_setCoins(9999)">Set coins → 9,999</button>
+        <button class="action-btn gold" onclick="qa_setCoins(500)">Set coins → 500</button>
+        <button class="action-btn" onclick="qa_setXP(16001)">Set XP → 16,001 (Level 10)</button>
+        <button class="action-btn" onclick="qa_setXP(11501)">Set XP → 11,501 (Level 9)</button>
+        <button class="action-btn" onclick="qa_setXP(0)">Reset XP → 0 (Level 1)</button>
+      </div>
+
+      <div class="action-group">
+        <div class="action-group-label">🧙 Merchant</div>
+        <button class="action-btn purple" onclick="qa_setMerchantDeals(40)">Set merchant deals → 40 (unlock exotic offers)</button>
+        <button class="action-btn purple" onclick="qa_setMerchantDeals(20)">Set merchant deals → 20</button>
+        <button class="action-btn purple" onclick="qa_setMerchantDeals(5)">Set merchant deals → 5</button>
+        <button class="action-btn purple" onclick="qa_setMerchantDeals(0)">Reset merchant deals → 0</button>
+        <button class="action-btn purple" onclick="qa_forceMerchant()">Force merchant to appear NOW</button>
+      </div>
+
+      <div class="action-group">
+        <div class="action-group-label">✨ Exotic Seeds</div>
+        <button class="action-btn gold" onclick="qa_addExoticSeeds()">Add 3× each exotic seed to inventory</button>
+        <button class="action-btn gold" onclick="qa_addHeritageSeeds()">Add 1× each Heritage exotic seed</button>
+        <button class="action-btn gold" onclick="qa_addSingleExotic('dragonfruit',2)">Add 2× Dragon Fruit</button>
+        <button class="action-btn gold" onclick="qa_addSingleExotic('saffron',2)">Add 2× Saffron</button>
+        <button class="action-btn gold" onclick="qa_addSingleExotic('vanilla',2)">Add 2× Vanilla</button>
+        <button class="action-btn gold" onclick="qa_addSingleExotic('truffle',2)">Add 2× Truffle</button>
+      </div>
+
+      <div class="action-group">
+        <div class="action-group-label">🌿 Compost & Can</div>
+        <button class="action-btn" onclick="qa_refillCompost()">Refill compost → 5 charges</button>
+        <button class="action-btn" onclick="qa_readyWateringCan()">Make watering can ready NOW</button>
+      </div>
+
+      <div class="action-group">
+        <div class="action-group-label">🌱 Plots</div>
+        <button class="action-btn" onclick="qa_readyAllPlots()">Make ALL growing crops ready to harvest</button>
+        <button class="action-btn" onclick="qa_readySeedingPlots()">Make ALL seeding plots ready to collect</button>
+        <button class="action-btn" onclick="qa_unlockAllPlots()">Unlock all 20 plots</button>
+        <button class="action-btn red" onclick="qa_clearAllPlots()">Clear all plots (empty farm)</button>
+      </div>
+
+      <div class="action-group">
+        <div class="action-group-label">🔄 Misc</div>
+        <button class="action-btn" onclick="qa_setPrestige(5)">Set prestige → 5</button>
+        <button class="action-btn" onclick="qa_setPrestige(10)">Set prestige → 10</button>
+        <button class="action-btn" onclick="qa_setPrestige(20)">Set prestige → 20</button>
+        <button class="action-btn" onclick="qa_setPrestige(50)">Set prestige → 50</button>
+        <button class="action-btn" onclick="qa_setMishapInsurance()">Set mishap insurance → 30 min</button>
+        <button class="action-btn" onclick="qa_clearMishapInsurance()">Clear mishap insurance</button>
+        <button class="action-btn" onclick="qa_forceNextEvent()">Force random event to fire NOW</button>
+        <button class="action-btn red" onclick="qa_nukeSave()">🗑️ Delete save (hard reset)</button>
+      </div>
+    </div>
+
+    <!-- Field Editor -->
+    <div class="panel">
+      <div class="panel-title">✏️ Field Editor</div>
+      <div class="field-grid" id="field-editor">
+        <!-- populated by JS -->
+      </div>
+      <button class="btn btn-green" onclick="applyFields()" style="width:100%">Apply Field Changes</button>
+    </div>
+  </div>
+
+  <!-- RIGHT: Plot Grid + Inventory Builder + JSON Editor -->
+  <div>
+
+    <!-- Plot Grid -->
+    <div class="panel" style="margin-bottom:12px">
+      <div class="panel-title">🌱 Plot Inspector & Editor</div>
+      <div class="plot-grid" id="plot-grid"></div>
+      <div class="btn-row">
+        <button class="btn btn-green" onclick="refreshAll()">↻ Refresh</button>
+      </div>
+    </div>
+
+    <!-- Inventory Builder -->
+    <div class="panel" style="margin-bottom:12px">
+      <div class="panel-title">🎒 Inventory Builder</div>
+      <div id="inv-builder">
+        <!-- rows added by JS -->
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-dim" onclick="addInvRow()">+ Add row</button>
+        <button class="btn btn-green" onclick="applyInventory()">Apply Inventory</button>
+        <button class="btn btn-red" onclick="clearInventory()">Clear All Seeds</button>
+      </div>
+    </div>
+
+    <!-- Raw JSON Editor -->
+    <div class="panel">
+      <div class="panel-title">📄 Raw JSON Editor</div>
+      <textarea class="json-area" id="json-editor" spellcheck="false"></textarea>
+      <div class="btn-row">
+        <button class="btn btn-blue" onclick="loadFromStorage()">↺ Reload from Storage</button>
+        <button class="btn btn-gold" onclick="writeToStorage()">💾 Write to Storage</button>
+        <button class="btn btn-dim" onclick="formatJSON()">Format JSON</button>
+        <button class="btn btn-dim" onclick="copyJSON()">Copy JSON</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Constants ─────────────────────────────────────────────────
+const SAVE_KEY = 'idle_farm_v1';
+const GUEST_SAVE_KEY = SAVE_KEY + '_guest';
+const WALLET_SAVE_PREFIX = SAVE_KEY + '_wallet_';
+
+const ALL_CROPS = [
+  'radish','lettuce','spinach','zucchini','beans','peas','cucumber',
+  'beetroot','carrot','cabbage','tomato','corn','broccoli','capsicum',
+  'cauliflower','sunflower','onion','potato','pumpkin','garlic',
+  'dragonfruit','saffron','vanilla','truffle'
+];
+const EXOTIC_CROPS = ['dragonfruit','saffron','vanilla','truffle'];
+const CROP_NAMES = {
+  radish:'Radish', lettuce:'Lettuce', spinach:'Spinach', zucchini:'Zucchini',
+  beans:'Beans', peas:'Peas', cucumber:'Cucumber', beetroot:'Beetroot',
+  carrot:'Carrot', cabbage:'Cabbage', tomato:'Tomato', corn:'Corn',
+  broccoli:'Broccoli', capsicum:'Capsicum', cauliflower:'Cauliflower',
+  sunflower:'Sunflower', onion:'Onion', potato:'Potato', pumpkin:'Pumpkin',
+  garlic:'Garlic', dragonfruit:'Dragon Fruit ✨', saffron:'Saffron ✨',
+  vanilla:'Vanilla ✨', truffle:'Truffle ✨',
+  dragonfruit_heritage:'Dragon Fruit ✨H', saffron_heritage:'Saffron ✨H',
+  vanilla_heritage:'Vanilla ✨H', truffle_heritage:'Truffle ✨H',
+};
+const CROP_GAME_SECS = {
+  radish:89, lettuce:172, spinach:149, zucchini:188, beans:188, peas:215,
+  cucumber:198, beetroot:231, carrot:248, cabbage:330, tomato:264, corn:281,
+  broccoli:297, capsicum:264, cauliflower:330, sunflower:330, onion:363,
+  potato:347, pumpkin:347, garlic:495,
+  dragonfruit:660, saffron:792, vanilla:924, truffle:1089,
+};
+
+// ── Toast ─────────────────────────────────────────────────────
+function toast(msg, isError = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = isError ? 'error show' : 'show';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 2200);
+}
+
+// ── Storage helpers ───────────────────────────────────────────
+function getSaveKeys() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k === GUEST_SAVE_KEY || k.startsWith(WALLET_SAVE_PREFIX)) keys.push(k);
+  }
+  return keys;
+}
+
+function getActiveSaveKey() {
+  return sessionStorage.getItem('pt_dev_active_save') || GUEST_SAVE_KEY;
+}
+
+function setActiveSaveKey(key) {
+  sessionStorage.setItem('pt_dev_active_save', key);
+  refreshAll();
+}
+
+function readSave() {
+  const activeKey = getActiveSaveKey();
+  const raw = localStorage.getItem(activeKey);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch(e) { return null; }
+}
+
+function writeSave(obj) {
+  localStorage.setItem(getActiveSaveKey(), JSON.stringify(obj));
+}
+
+function patchSave(fn) {
+  const s = readSave();
+  if (!s) { toast('No save found — play the game first to create a save.', true); return; }
+  fn(s);
+  writeSave(s);
+  refreshAll();
+  toast('✅ Save updated — reload the game tab to see changes.');
+}
+
+// ── JSON editor ───────────────────────────────────────────────
+function loadFromStorage() {
+  const s = readSave();
+  if (!s) { document.getElementById('json-editor').value = '// No save found'; return; }
+  document.getElementById('json-editor').value = JSON.stringify(s, null, 2);
+  updateSaveAge(s);
+}
+
+function writeToStorage() {
+  try {
+    const obj = JSON.parse(document.getElementById('json-editor').value);
+    writeSave(obj);
+    toast('✅ Written to storage — reload the game tab.');
+    refreshAll();
+  } catch(e) {
+    toast('❌ Invalid JSON: ' + e.message, true);
+  }
+}
+
+function formatJSON() {
+  try {
+    const obj = JSON.parse(document.getElementById('json-editor').value);
+    document.getElementById('json-editor').value = JSON.stringify(obj, null, 2);
+  } catch(e) { toast('❌ Invalid JSON', true); }
+}
+
+function copyJSON() {
+  navigator.clipboard.writeText(document.getElementById('json-editor').value)
+    .then(() => toast('📋 Copied to clipboard'))
+    .catch(() => toast('❌ Copy failed', true));
+}
+
+// ── Field editor ──────────────────────────────────────────────
+const FIELDS = [
+  { key: 'coins',                label: 'Coins',                   type: 'number' },
+  { key: 'totalXP',             label: 'Total XP',                type: 'number' },
+  { key: 'level',               label: 'Level (1–10)',             type: 'number' },
+  { key: 'prestige',            label: 'Prestige (0–50)',          type: 'number' },
+  { key: 'compostCharges',      label: 'Compost Charges (0–5)',    type: 'number' },
+  { key: '_merchantDealsAccepted', label: 'Merchant Deals Accepted', type: 'number' },
+  { key: '_eventsEncountered',  label: 'Events Encountered',       type: 'number' },
+  { key: '_eventsFixed',        label: 'Events Fixed',             type: 'number' },
+  { key: 'seedsCollectedTotal', label: 'Seeds Collected (lifetime)', type: 'number' },
+  { key: '_heritageCollected',  label: 'Heritage Seeds Collected', type: 'number' },
+  { key: '_exoticMishapsFix',   label: 'Mishap Fixes Paid',        type: 'number' },
+  { key: 'exoticMishapsTotal',  label: 'Total Mishaps',            type: 'number' },
+  { key: '_exoticNearMisses',   label: 'Near Misses',              type: 'number' },
+  { key: 'totalHarvestCount',   label: 'Total Harvests',           type: 'number' },
+  { key: 'totalCoinsEarned',    label: 'Total Coins Earned',       type: 'number' },
+  { key: 'farmName',            label: 'Farm Name',                type: 'text' },
+  { key: 'farmerName',          label: 'Farmer Name',              type: 'text' },
+];
+
+function buildFieldEditor(save) {
+  const el = document.getElementById('field-editor');
+  el.innerHTML = '';
+  FIELDS.forEach(f => {
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    const label = document.createElement('span');
+    label.className = 'field-label';
+    label.textContent = f.label;
+    const input = document.createElement('input');
+    input.className = 'field-input';
+    input.type = f.type;
+    input.dataset.key = f.key;
+    input.value = save ? (save[f.key] ?? '') : '';
+    row.appendChild(label);
+    row.appendChild(input);
+    el.appendChild(row);
+  });
+}
+
+function applyFields() {
+  patchSave(s => {
+    document.querySelectorAll('#field-editor .field-input').forEach(inp => {
+      const k = inp.dataset.key;
+      const field = FIELDS.find(f => f.key === k);
+      if (field.type === 'number') {
+        const v = Number(inp.value);
+        if (!isNaN(v)) s[k] = v;
+      } else {
+        s[k] = inp.value;
+      }
+    });
+  });
+}
+
+// ── Inventory builder ─────────────────────────────────────────
+const ALL_INV_OPTIONS = [
+  ...ALL_CROPS,
+  'dragonfruit_heritage','saffron_heritage','vanilla_heritage','truffle_heritage'
+];
+
+function buildInvOptions() {
+  return ALL_INV_OPTIONS.map(id =>
+    `<option value="${id}">${CROP_NAMES[id] || id}</option>`
+  ).join('');
+}
+
+function addInvRow(cropId = '', qty = 1) {
+  const container = document.getElementById('inv-builder');
+  const row = document.createElement('div');
+  row.className = 'inv-row';
+  row.innerHTML = `
+    <select class="inv-select">${buildInvOptions()}</select>
+    <input class="inv-qty" type="number" value="${qty}" min="0" max="99">
+    <button class="btn btn-red" style="padding:5px 10px;font-size:11px" onclick="this.parentElement.remove()">✕</button>
+  `;
+  if (cropId) row.querySelector('select').value = cropId;
+  container.appendChild(row);
+}
+
+function populateInvBuilder(save) {
+  const container = document.getElementById('inv-builder');
+  container.innerHTML = '';
+  if (!save || !save.inventory) return;
+  const entries = Object.entries(save.inventory).filter(([,q]) => q > 0);
+  if (entries.length === 0) { addInvRow(); return; }
+  entries.forEach(([k, q]) => addInvRow(k, q));
+}
+
+function applyInventory() {
+  const rows = document.querySelectorAll('#inv-builder .inv-row');
+  const newInv = {};
+  rows.forEach(row => {
+    const key = row.querySelector('select').value;
+    const qty = parseInt(row.querySelector('input').value, 10);
+    if (key && qty > 0) newInv[key] = (newInv[key] || 0) + qty;
+  });
+  patchSave(s => { s.inventory = newInv; });
+}
+
+function clearInventory() {
+  patchSave(s => { s.inventory = {}; });
+  populateInvBuilder(readSave());
+  toast('✅ Inventory cleared.');
+}
+
+// ── Plot grid ─────────────────────────────────────────────────
+function buildPlotGrid(save) {
+  const grid = document.getElementById('plot-grid');
+  if (!save || !save.plots) { grid.innerHTML = '<div style="color:var(--dim);font-size:12px">No save found.</div>'; return; }
+  grid.innerHTML = '';
+  save.plots.forEach((plot, i) => {
+    const card = document.createElement('div');
+    card.className = 'plot-card';
+
+    let statusText = '';
+    let btns = '';
+    if (!plot.unlocked) {
+      statusText = '🔒 Locked';
+      btns = `<button class="plot-btn" onclick="unlockPlot(${i})">Unlock</button>`;
+    } else if (plot.seeding) {
+      const pct = plot.seedingDuration
+        ? Math.round((Date.now() - plot.seedingStartedAt) / plot.seedingDuration * 100)
+        : 0;
+      statusText = `🌱 Seeding ${pct}%${plot.seedReady ? ' ✅' : ''}`;
+      btns = `<button class="plot-btn gold-btn" onclick="makeSeedReady(${i})">Make Seeds Ready</button>
+              <button class="plot-btn red-btn" onclick="clearPlot(${i})">Clear</button>`;
+    } else if (plot.cropId && !plot.ready) {
+      const crop = plot.cropId;
+      const gs = CROP_GAME_SECS[crop] || 300;
+      const elapsed = (Date.now() - plot.plantedAt) / 1000;
+      const pct = Math.min(Math.round(elapsed / gs * 100), 99);
+      statusText = `🌿 ${CROP_NAMES[crop] || crop} ${pct}%`;
+      btns = `<button class="plot-btn" onclick="makeCropReady(${i})">Make Ready</button>
+              <button class="plot-btn red-btn" onclick="clearPlot(${i})">Clear</button>`;
+    } else if (plot.ready) {
+      statusText = `✨ ${CROP_NAMES[plot.cropId] || plot.cropId} READY`;
+      btns = `<button class="plot-btn red-btn" onclick="clearPlot(${i})">Clear</button>`;
+    } else {
+      statusText = 'Empty';
+      const cropSel = `<select class="plot-select" id="plant-sel-${i}">${ALL_CROPS.map(c => `<option value="${c}">${CROP_NAMES[c]||c}</option>`).join('')}</select>`;
+      btns = cropSel + `<button class="plot-btn" onclick="plantOnPlot(${i})">Plant</button>`;
+    }
+
+    card.innerHTML = `
+      <div class="plot-num">Plot ${i + 1}</div>
+      <div class="plot-status">${statusText}</div>
+      ${btns}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function unlockPlot(idx) {
+  patchSave(s => { if (s.plots[idx]) s.plots[idx].unlocked = true; });
+}
+
+function clearPlot(idx) {
+  patchSave(s => {
+    const p = s.plots[idx];
+    if (!p) return;
+    p.cropId = null; p.plantedAt = null; p.ready = false; p.fertilised = false;
+    p.seeding = false; p.seedingStartedAt = null; p.seedingDuration = null;
+    p.seedReady = false; p.heritage = false;
+  });
+}
+
+function makeCropReady(idx) {
+  patchSave(s => {
+    const p = s.plots[idx];
+    if (p && p.cropId) {
+      p.ready = true;
+      p.plantedAt = Date.now() - (CROP_GAME_SECS[p.cropId] || 300) * 1000 - 1000;
+    }
+  });
+}
+
+function makeSeedReady(idx) {
+  patchSave(s => {
+    const p = s.plots[idx];
+    if (p && p.seeding) {
+      p.seedReady = true;
+      p.seedingStartedAt = Date.now() - (p.seedingDuration || 200000) - 1000;
+    }
+  });
+}
+
+function plantOnPlot(idx) {
+  const sel = document.getElementById('plant-sel-' + idx);
+  if (!sel) return;
+  const cropId = sel.value;
+  patchSave(s => {
+    const p = s.plots[idx];
+    if (!p || !p.unlocked) return;
+    p.cropId = cropId;
+    p.plantedAt = Date.now();
+    p.ready = false;
+    p.fertilised = false;
+    p.seeding = false;
+    p.seedReady = false;
+    p.heritage = false;
+  });
+}
+
+// ── Quick actions ─────────────────────────────────────────────
+function qa_setCoins(n)       { patchSave(s => { s.coins = n; }); }
+function qa_setXP(n)          { patchSave(s => { s.totalXP = n; }); }
+function qa_setPrestige(n)    { patchSave(s => { s.prestige = n; }); }
+function qa_setMishapInsurance() { patchSave(s => { s._mishapInsuranceExpiry = Date.now() + 30 * 60 * 1000; }); }
+function qa_clearMishapInsurance() { patchSave(s => { s._mishapInsuranceExpiry = 0; }); }
+function qa_refillCompost()   { patchSave(s => { s.compostCharges = 5; s.compostLastCharged = 0; }); }
+function qa_readyWateringCan(){ patchSave(s => { s.wateringCanLastUsed = 0; }); }
+function qa_setMerchantDeals(n){ patchSave(s => { s._merchantDealsAccepted = n; }); }
+
+function qa_unlockAllPlots() {
+  patchSave(s => {
+    s.plots.forEach((p, i) => { p.unlocked = true; if (i > 0) p.harvestedCount = Math.max(p.harvestedCount || 0, 1); });
+  });
+}
+
+function qa_clearAllPlots() {
+  patchSave(s => {
+    s.plots.forEach(p => {
+      p.cropId = null; p.plantedAt = null; p.ready = false; p.fertilised = false;
+      p.seeding = false; p.seedingStartedAt = null; p.seedingDuration = null;
+      p.seedReady = false; p.heritage = false;
+    });
+  });
+}
+
+function qa_readyAllPlots() {
+  patchSave(s => {
+    s.plots.forEach(p => {
+      if (p.cropId && p.plantedAt && !p.ready && !p.seeding) {
+        p.ready = true;
+        p.plantedAt = Date.now() - (CROP_GAME_SECS[p.cropId] || 300) * 1000 - 1000;
+      }
+    });
+  });
+}
+
+function qa_readySeedingPlots() {
+  patchSave(s => {
+    s.plots.forEach(p => {
+      if (p.seeding && !p.seedReady) {
+        p.seedReady = true;
+        p.seedingStartedAt = Date.now() - (p.seedingDuration || 200000) - 1000;
+      }
+    });
+  });
+}
+
+function qa_addExoticSeeds() {
+  patchSave(s => {
+    EXOTIC_CROPS.forEach(id => { s.inventory[id] = (s.inventory[id] || 0) + 3; });
+  });
+}
+
+function qa_addHeritageSeeds() {
+  patchSave(s => {
+    EXOTIC_CROPS.forEach(id => {
+      const k = id + '_heritage';
+      s.inventory[k] = (s.inventory[k] || 0) + 1;
+    });
+  });
+}
+
+function qa_addSingleExotic(id, qty) {
+  patchSave(s => { s.inventory[id] = (s.inventory[id] || 0) + qty; });
+}
+
+function qa_forceMerchant() {
+  // Set merchantExpiry to 0 so the game reschedules immediately.
+  // Also set _nextMerchantTime to past via a trick: write a dummy merchantActive=false
+  // and let the game's own scheduling run. We can't set the in-memory timer directly,
+  // so we note this limitation.
+  patchSave(s => {
+    s.merchantActive = false;
+    s.merchantDeal = null;
+    s.merchantExpiry = 0;
+  });
+  toast('✅ Merchant cleared — reload game tab, merchant will appear within ~15s of next tick.');
+}
+
+function qa_forceNextEvent() {
+  patchSave(s => {
+    // Set lastEventTime far in the past so checkRandomEvent fires immediately
+    s.lastEventTime = 0;
+  });
+  toast('✅ Event timer reset — reload game tab, an event will fire within seconds.');
+}
+
+function qa_nukeSave() {
+  if (!confirm('Delete the entire save for ' + getActiveSaveKey() + '? This cannot be undone.')) return;
+  localStorage.removeItem(getActiveSaveKey());
+  toast('🗑️ Save deleted.');
+  refreshAll();
+}
+
+function buildProfileButtons() {
+  const container = document.getElementById('profile-buttons');
+  const keys = getSaveKeys();
+  const active = getActiveSaveKey();
+
+  if (keys.length === 0) {
+    container.innerHTML = '<span style="font-size:11px;color:var(--dim)">No saves found</span>';
+    return;
+  }
+
+  container.innerHTML = keys.map(k => {
+    const label = k === GUEST_SAVE_KEY ? 'Guest' : 'Wallet: ' + k.replace(WALLET_SAVE_PREFIX, '').slice(0, 12) + '…';
+    const isActive = k === active;
+    return `<button onclick="setActiveSaveKey('${k}')" style="
+      padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;
+      background:${isActive ? 'rgba(111,207,58,0.2)' : 'rgba(255,255,255,0.05)'};
+      border:1px solid ${isActive ? 'var(--green)' : 'rgba(255,255,255,0.15)'};
+      color:${isActive ? 'var(--green)' : 'var(--dim)'};
+    ">${label}</button>`;
+  }).join('');
+}
+
+// ── Age display ───────────────────────────────────────────────
+function updateSaveAge(save) {
+  if (!save) { document.getElementById('save-age').textContent = 'No save'; return; }
+  const ts = save.lastEventTime || save.merchantExpiry;
+  if (!ts) { document.getElementById('save-age').textContent = 'Save found'; return; }
+  const age = Math.round((Date.now() - ts) / 1000);
+  document.getElementById('save-age').textContent = `Last event: ${age}s ago`;
+}
+
+// ── Master refresh ────────────────────────────────────────────
+function refreshAll() {
+  const save = readSave();
+  loadFromStorage();
+  buildFieldEditor(save);
+  populateInvBuilder(save);
+  buildPlotGrid(save);
+  buildProfileButtons();
+  document.getElementById('active-save-key').textContent = getActiveSaveKey();
+  if (save) updateSaveAge(save);
+}
+
+// ── Init ──────────────────────────────────────────────────────
+document.getElementById('origin-display').textContent = location.origin || location.protocol + '//' + location.host;
+
+// Warn if on a different origin from typical local file usage
+if (location.protocol !== 'file:' && !location.hostname.includes('localhost') && !location.hostname.includes('127.0.0.1')) {
+  document.getElementById('origin-warning').style.display = 'block';
+}
+
+// Initial load
+refreshAll();
+
+// Auto-refresh every 5s so plots update their % progress
+setInterval(refreshAll, 5000);
+</script>
+</body>
+</html>

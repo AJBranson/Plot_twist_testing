@@ -84,6 +84,9 @@ export const MERCHANT_DURATION = 3 * 60 * 1000;
 export const MERCHANT_MIN_GAP  = 10 * 60 * 1000;
 export const MERCHANT_MAX_GAP  = 15 * 60 * 1000;
 
+export const MISHAP_INSURANCE_COST   = 50;
+export const MISHAP_INSURANCE_SECS   = 30 * 60;
+
 // NOTE: Callbacks access game state via window.G, window.notify, etc.
 // These are set up by main.js after initialization.
 export const MERCHANT_DEALS = [
@@ -317,6 +320,7 @@ export const RANDOM_EVENTS = [
     fixLabel: (cost) => `Fumigate (🪙${cost})`,
     onFix: () => { window.G._exoticMishapsFix = (window.G._exoticMishapsFix || 0) + 1; window.notify('🐛 Weevils fumigated! Exotic seeds safe.', 'harvest'); },
     onIgnore: () => {
+      if (window.isMishapInsured && window.isMishapInsured()) { window.notify('🛡️ Mishap Insurance absorbed the weevil damage!', 'unlock'); return; }
       const roll = Math.random();
       if (roll < 0.05) { window.applyMishapTotal && window.applyMishapTotal(); }
       else if (roll < 0.25) { window.applyMishapPartial && window.applyMishapPartial(); }
@@ -331,6 +335,7 @@ export const RANDOM_EVENTS = [
     fixLabel: (cost) => `Cover crops (🪙${cost})`,
     onFix: () => { window.G._exoticMishapsFix = (window.G._exoticMishapsFix || 0) + 1; window.notify('❄️ Crops covered in time! Seeds protected.', 'harvest'); },
     onIgnore: () => {
+      if (window.isMishapInsured && window.isMishapInsured()) { window.notify('🛡️ Mishap Insurance absorbed the frost damage!', 'unlock'); return; }
       const roll = Math.random();
       if (roll < 0.05) { window.applyMishapTotal && window.applyMishapTotal(); }
       else if (roll < 0.25) { window.applyMishapPartial && window.applyMishapPartial(); }

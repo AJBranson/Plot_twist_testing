@@ -414,6 +414,53 @@ export function soilSVG(w, h) {
   </svg>`;
 }
 
+export function soilSVGWithPrestige(w, h, prestige) {
+  const tier = getPrestigeTier(prestige);
+  const base = soilSVG(w, h);
+
+  if (tier === 0) return base;
+
+  const soilTints = [
+    '',
+    '<rect width="100" height="100" fill="#5A3010" opacity="0.15"/>',
+    '<rect width="100" height="100" fill="#6A3A15" opacity="0.20"/>',
+    '<rect width="100" height="100" fill="#7A4418" opacity="0.25"/>',
+    '<rect width="100" height="100" fill="#8A4E1B" opacity="0.30"/>',
+    '<rect width="100" height="100" fill="#9A5820" opacity="0.35"/>',
+    '<rect width="100" height="100" fill="#AA6225" opacity="0.40"/>',
+    '<rect width="100" height="100" fill="#BA6C2A" opacity="0.45"/>',
+  ];
+
+  let extras = soilTints[tier];
+
+  if (tier >= 2) {
+    extras += `<rect x="0" y="0" width="100" height="2" fill="#8B7355" opacity="0.3"/>`;
+    extras += `<rect x="0" y="98" width="100" height="2" fill="#8B7355" opacity="0.3"/>`;
+  }
+  if (tier >= 3) {
+    extras += `<ellipse cx="50" cy="50" rx="30" ry="30" fill="none" stroke="#9A8060" stroke-width="0.5" opacity="0.25" stroke-dasharray="3,4"/>`;
+  }
+  if (tier >= 4) {
+    extras += `<circle cx="10" cy="10" r="1.5" fill="#FFD700" opacity="0.2"/>`;
+    extras += `<circle cx="90" cy="10" r="1.5" fill="#FFD700" opacity="0.2"/>`;
+    extras += `<circle cx="10" cy="90" r="1.5" fill="#FFD700" opacity="0.2"/>`;
+    extras += `<circle cx="90" cy="90" r="1.5" fill="#FFD700" opacity="0.2"/>`;
+  }
+  if (tier >= 5) {
+    extras += `<line x1="0" y1="0" x2="100" y2="100" stroke="#B8A882" stroke-width="0.3" opacity="0.15"/>`;
+    extras += `<line x1="100" y1="0" x2="0" y2="100" stroke="#B8A882" stroke-width="0.3" opacity="0.15"/>`;
+  }
+  if (tier >= 6) {
+    extras += `<rect x="2" y="2" width="96" height="96" rx="4" fill="none" stroke="#D4C5A9" stroke-width="0.8" opacity="0.2"/>`;
+  }
+  if (tier >= 7) {
+    extras += `<circle cx="50" cy="50" r="40" fill="none" stroke="#FFD700" stroke-width="0.5" opacity="0.15" stroke-dasharray="5,3"/>`;
+    extras += `<circle cx="50" cy="50" r="35" fill="none" stroke="#FFD700" stroke-width="0.3" opacity="0.1" stroke-dasharray="2,5"/>`;
+  }
+
+  return base.replace('</svg>', extras + '</svg>');
+}
+
 export function seedlingSVG(progress) {
   const stemTop = 58 - 8 - progress * 26;
   const lo = 0.35 + progress * 0.65;
@@ -459,6 +506,16 @@ export function progressRingSVG(progress) {
   </svg>`;
 }
 
+export const PRESTIGE_MILESTONES = [1, 5, 10, 20, 30, 40, 50];
+
+export function getPrestigeTier(prestige) {
+  let tier = 0;
+  for (let i = 0; i < PRESTIGE_MILESTONES.length; i++) {
+    if (prestige >= PRESTIGE_MILESTONES[i]) tier = i + 1;
+  }
+  return tier;
+}
+
 export function lockSVG() {
   return `<svg width="32" height="38" viewBox="0 0 32 38" xmlns="http://www.w3.org/2000/svg">
     <rect x="4" y="16" width="24" height="20" rx="4" fill="#3A3A3A" stroke="#555" stroke-width="1.5"/>
@@ -466,4 +523,100 @@ export function lockSVG() {
     <circle cx="16" cy="25" r="4" fill="#666" stroke="#888" stroke-width="1"/>
     <rect x="14.5" y="25" width="3" height="5" rx="1.5" fill="#666"/>
   </svg>`;
+}
+
+export function lockSVGWithPrestige(prestige) {
+  const tier = getPrestigeTier(prestige);
+  if (tier === 0) return lockSVG();
+
+  const borderColors = { 1:'#6B5B3A', 2:'#8B7355', 3:'#A0926B', 4:'#B8A882', 5:'#C9B896', 6:'#D4C5A9', 7:'#E8D9BE' };
+  const bodyColors  = { 1:'#4A4030', 2:'#5A4A38', 3:'#6A5540', 4:'#7A6048', 5:'#8A6B50', 6:'#9A7658', 7:'#AA8160' };
+  const shackleClr  = { 1:'#8B7B5A', 2:'#A0906A', 3:'#B5A57A', 4:'#CABA8A', 5:'#DFCF9A', 6:'#E5D5AA', 7:'#EBDBBA' };
+  const keyholeClr   = { 1:'#888866', 2:'#999977', 3:'#AAAA88', 4:'#BBBB99', 5:'#CCCCAA', 6:'#DDBBCC', 7:'#EEDDCC' };
+
+  let extras = '';
+  if (tier >= 2) {
+    extras += `<rect x="2" y="14" width="28" height="24" rx="5" fill="none" stroke="${borderColors[tier]}" stroke-width="1" opacity="0.6"/>`;
+  }
+  if (tier >= 3) {
+    extras += `<circle cx="8" cy="20" r="1.5" fill="#FFD700" opacity="0.5"/>`;
+    extras += `<circle cx="24" cy="20" r="1.5" fill="#FFD700" opacity="0.5"/>`;
+  }
+  if (tier >= 4) {
+    extras += `<path d="M16 10 L18 14 L16 13 L14 14 Z" fill="#FFD700" opacity="0.4"/>`;
+  }
+  if (tier >= 5) {
+    extras += `<rect x="6" y="30" width="20" height="3" rx="1" fill="${shackleClr[tier]}" opacity="0.3"/>`;
+    extras += `<line x1="10" y1="31.5" x2="22" y2="31.5" stroke="${shackleClr[tier]}" stroke-width="0.5" opacity="0.4"/>`;
+  }
+  if (tier >= 6) {
+    extras += `<circle cx="16" cy="8" r="2" fill="none" stroke="#FFD700" stroke-width="0.8" opacity="0.5"/>`;
+    extras += `<circle cx="16" cy="8" r="0.8" fill="#FFD700" opacity="0.6"/>`;
+  }
+  if (tier >= 7) {
+    extras += `<line x1="4" y1="16" x2="4" y2="36" stroke="#FFD700" stroke-width="0.5" opacity="0.3"/>`;
+    extras += `<line x1="28" y1="16" x2="28" y2="36" stroke="#FFD700" stroke-width="0.5" opacity="0.3"/>`;
+    extras += `<rect x="4" y="16" width="24" height="20" rx="4" fill="none" stroke="#FFD700" stroke-width="0.8" opacity="0.25"/>`;
+  }
+
+  return `<svg width="32" height="38" viewBox="0 0 32 38" xmlns="http://www.w3.org/2000/svg">
+    <rect x="4" y="16" width="24" height="20" rx="4" fill="${bodyColors[tier]}" stroke="${borderColors[tier]}" stroke-width="1.5"/>
+    ${extras}
+    <path d="M9 16 V11 Q9 3 16 3 Q23 3 23 11 V16" fill="none" stroke="${shackleClr[tier]}" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="16" cy="25" r="4" fill="${keyholeClr[tier]}" stroke="${borderColors[tier]}" stroke-width="1"/>
+    <rect x="14.5" y="25" width="3" height="5" rx="1.5" fill="${bodyColors[tier]}"/>
+  </svg>`;
+}
+
+export function cropArtWithPrestige(cropId, prestige) {
+  const tier = getPrestigeTier(prestige);
+  const base = cropArt(cropId);
+
+  if (tier === 0) return base;
+
+  let extras = '';
+  if (tier >= 1) {
+    extras += `<rect x="1" y="1" width="58" height="58" rx="4" fill="none" stroke="rgba(139,115,85,0.3)" stroke-width="0.5"/>`;
+  }
+  if (tier >= 2) {
+    extras += `<circle cx="5" cy="5" r="1" fill="#FFD700" opacity="0.3"/>`;
+    extras += `<circle cx="55" cy="5" r="1" fill="#FFD700" opacity="0.3"/>`;
+    extras += `<circle cx="5" cy="55" r="1" fill="#FFD700" opacity="0.3"/>`;
+    extras += `<circle cx="55" cy="55" r="1" fill="#FFD700" opacity="0.3"/>`;
+  }
+  if (tier >= 3) {
+    extras += `<rect x="3" y="3" width="54" height="54" rx="3" fill="none" stroke="rgba(180,160,120,0.2)" stroke-width="0.5" stroke-dasharray="2,3"/>`;
+  }
+  if (tier >= 4) {
+    extras += `<circle cx="30" cy="2" r="1.5" fill="#FFD700" opacity="0.35"/>`;
+    extras += `<circle cx="30" cy="58" r="1.5" fill="#FFD700" opacity="0.35"/>`;
+    extras += `<circle cx="2" cy="30" r="1.5" fill="#FFD700" opacity="0.35"/>`;
+    extras += `<circle cx="58" cy="30" r="1.5" fill="#FFD700" opacity="0.35"/>`;
+  }
+  if (tier >= 5) {
+    extras += `<circle cx="30" cy="30" r="28" fill="none" stroke="rgba(212,197,169,0.15)" stroke-width="0.5" stroke-dasharray="4,3"/>`;
+  }
+  if (tier >= 6) {
+    extras += `<circle cx="10" cy="10" r="2" fill="none" stroke="#FFD700" stroke-width="0.5" opacity="0.25"/>`;
+    extras += `<circle cx="50" cy="10" r="2" fill="none" stroke="#FFD700" stroke-width="0.5" opacity="0.25"/>`;
+    extras += `<circle cx="10" cy="50" r="2" fill="none" stroke="#FFD700" stroke-width="0.5" opacity="0.25"/>`;
+    extras += `<circle cx="50" cy="50" r="2" fill="none" stroke="#FFD700" stroke-width="0.5" opacity="0.25"/>`;
+    extras += `<circle cx="10" cy="10" r="0.8" fill="#FFD700" opacity="0.3"/>`;
+    extras += `<circle cx="50" cy="10" r="0.8" fill="#FFD700" opacity="0.3"/>`;
+    extras += `<circle cx="10" cy="50" r="0.8" fill="#FFD700" opacity="0.3"/>`;
+    extras += `<circle cx="50" cy="50" r="0.8" fill="#FFD700" opacity="0.3"/>`;
+  }
+  if (tier >= 7) {
+    extras += `<rect x="0" y="0" width="60" height="60" rx="5" fill="none" stroke="rgba(255,215,0,0.2)" stroke-width="1"/>`;
+    extras += `<line x1="0" y1="0" x2="10" y2="0" stroke="#FFD700" stroke-width="1.5" opacity="0.3"/>`;
+    extras += `<line x1="50" y1="0" x2="60" y2="0" stroke="#FFD700" stroke-width="1.5" opacity="0.3"/>`;
+    extras += `<line x1="0" y1="60" x2="10" y2="60" stroke="#FFD700" stroke-width="1.5" opacity="0.3"/>`;
+    extras += `<line x1="50" y1="60" x2="60" y2="60" stroke="#FFD700" stroke-width="1.5" opacity="0.3"/>`;
+    extras += `<line x1="0" y1="0" x2="0" y2="10" stroke="#FFD700" stroke-width="1.5" opacity="0.3"/>`;
+    extras += `<line x1="60" y1="0" x2="60" y2="10" stroke="#FFD700" stroke-width="1.5" opacity="0.3"/>`;
+    extras += `<line x1="0" y1="50" x2="0" y2="60" stroke="#FFD700" stroke-width="1.5" opacity="0.3"/>`;
+    extras += `<line x1="60" y1="50" x2="60" y2="60" stroke="#FFD700" stroke-width="1.5" opacity="0.3"/>`;
+  }
+
+  return `<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">${base}${extras}</svg>`;
 }

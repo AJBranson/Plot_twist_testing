@@ -65,6 +65,10 @@
           <span class="farmer-name-text" id="farmer-name-display">Farmer</span>
           <span class="name-edit-icon">✏️</span>
         </div>
+        <button id="speed-boost-btn" style="display:none" onclick="buySpeedBoost()" title="Speed Boost — 10× for 20 minutes" class="speed-boost-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span style="font-size:9px;font-weight:800">⚡</span>
+        </button>
         <button class="journal-btn" onclick="openJournal()" title="Crop Journal &amp; Achievements" id="journal-btn">
           📖 Journal <span id="journal-new-badge" style="display:none" class="journal-new-dot"></span>
         </button>
@@ -108,8 +112,22 @@
           </div>
           <div id="compost-status">Loading…</div>
           <div class="compost-pips" id="compost-pips"></div>
+          <button id="compost-buy-btn" style="margin-top:6px;background:rgba(200,134,10,0.15);border:1px solid rgba(200,134,10,0.4);border-radius:7px;padding:5px 10px;font-size:11px;font-weight:800;color:#F5A623;cursor:pointer;display:none">₿ 0.0002 BSV</button>
         </div>
       </div>
+
+      <!-- MISHAP INSURANCE -->
+      <div id="insurance-area">
+        <button id="insurance-btn" onclick="buyMishapInsurance()" title="Mishap Insurance"></button>
+        <div id="insurance-info">
+          <div id="insurance-label">
+            🛡️ Mishap Insurance
+            <span style="font-size:10px;font-weight:700;color:var(--text-dim)">Protects seeding plots</span>
+          </div>
+          <div id="insurance-status">Not insured</div>
+        </div>
+      </div>
+
       <!-- VEGE STAND -->
       <div id="vege-stand-area" style="display:none"></div>
 

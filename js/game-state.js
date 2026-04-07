@@ -111,6 +111,8 @@ export const DEFAULT_STATE = {
   _exoticNearMisses: 0,
   _heritageCollected: 0,
   standUnlocked: false,
+  _mishapInsuranceExpiry: 0,
+  _speedBoostExpiry: 0,
 };
 
 export function hasUnlockedVegeStand() {
@@ -259,6 +261,8 @@ function buildSaveData(state = G) {
     standEnabled: state.standEnabled !== false,
     standUnlocked: state.standUnlocked !== false,
     standMaxSlots: state.standMaxSlots || 3,
+    _mishapInsuranceExpiry: state._mishapInsuranceExpiry || 0,
+    _speedBoostExpiry: state._speedBoostExpiry || 0,
   };
 }
 
@@ -307,6 +311,8 @@ function applySaveData(saved, { walletConnected = false, walletAddress = null } 
   next.standEnabled = saved.standEnabled !== false;
   next.standUnlocked = saved.standUnlocked !== false;
   next.standMaxSlots = Number.isInteger(saved.standMaxSlots) ? saved.standMaxSlots : 3;
+  next._mishapInsuranceExpiry = saved._mishapInsuranceExpiry || 0;
+  next._speedBoostExpiry = saved._speedBoostExpiry || 0;
   next.fertiliseMode = false;
 
   if (Array.isArray(saved.plots)) {
@@ -662,6 +668,13 @@ function showEventModal(ev) {
   document.getElementById('event-overlay').classList.remove('hidden');
   G._eventsEncountered = (G._eventsEncountered || 0) + 1;
   window._currentEvent = { ev, cost };
+
+  clearTimeout(window._eventTimeout);
+  window._eventTimeout = setTimeout(() => {
+    if (window._currentEvent) {
+      resolveEvent(false);
+    }
+  }, 30000);
 }
 
 // ============================================================

@@ -3,7 +3,7 @@
 
 import { G, saveGame, ensureVegeStandUnlocked, hasUnlockedVegeStand } from './game-state.js';
 import { CROP_MAP } from './constants.js';
-import { CROP_THEME, cropArt, escHtml, timeSince } from './utils.js';
+import { CROP_THEME, cropArt, cropArtWithPrestige, escHtml, timeSince } from './utils.js';
 import { lbClient } from './leaderboard.js';
 import { requestBSVPayment } from './bsv-payments.js';
 
@@ -409,7 +409,7 @@ export function showBuyConfirm(listing) {
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:510;display:flex;align-items:center;justify-content:center;padding:16px';
   overlay.innerHTML = `
     <div style="background:linear-gradient(160deg,#182B14 0%,#111D0F 100%);border:1.5px solid rgba(255,209,64,0.4);border-radius:18px;padding:22px 20px 18px;max-width:320px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.8)">
-      <div style="margin-bottom:10px"><svg width="52" height="52" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="background:${theme.bg};border-radius:10px">${cropArt(baseCropId)}</svg></div>
+      <div style="margin-bottom:10px"><svg width="52" height="52" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="background:${theme.bg};border-radius:10px">${cropArtWithPrestige(baseCropId, G.prestige)}</svg></div>
       <div style="font-family:var(--ff-head);font-size:17px;color:#FFD700;margin-bottom:4px">Confirm Purchase</div>
       <div style="font-size:13px;color:var(--text);margin-bottom:4px;font-weight:800">${escHtml(listing.crop_name||'')} ×${listing.qty}</div>
       <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">Seller: ${escHtml(listing.seller_name||'Farmer')}</div>

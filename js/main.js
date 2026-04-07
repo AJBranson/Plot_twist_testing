@@ -12,21 +12,21 @@ import { G, loadGame, saveGame, DEFAULT_STATE, setUIHandlers, scheduleNextEvent,
          acceptMerchantDeal, dismissMerchant } from './game-state.js';
 import { connectWallet, disconnectWallet } from './wallet.js';
 import { buildAllAchievements, checkAchievements } from './achievements.js';
-import { cropArt, CROP_THEME, wateringCanCharge, getLevelData, checkLevelUp } from './utils.js';
+import { cropArt, cropArtWithPrestige, CROP_THEME, wateringCanCharge, getLevelData, checkLevelUp } from './utils.js';
 
 import {
   renderAll, renderPlots, renderPlotsOnly, renderStorage, renderShop, renderCompost,
-  renderHeading, renderWateringCan, notify, shakeStat, showFloatLabel,
+  renderHeading, renderWateringCan, renderMishapInsurance, notify, shakeStat, showFloatLabel,
   openJournal, closeJournal, showJTab, closeConfirm, showConfirm, showSaveConflictChoice,
 } from './rendering.js';
 
 import {
   toggleShopCard, shopChangeQty, buySeeds, buySeedsBSV,
   clearSelectedCrop, selectFromStorage, tryPlant, tryUnlockPlot,
-  unlockPlotBSV, harvestCrop, useWateringCan, toggleFertiliseMode,
+  unlockPlotBSV, buyCompostBSV, harvestCrop, useWateringCan, toggleFertiliseMode,
   applyFertiliser, startSeedSaving, collectSeeds, showHarvestFork,
   doPrestige, startEditName, resolveEvent, applyMishapPartial, applyMishapTotal,
-  getSeedingPlotsAtRisk,
+  getSeedingPlotsAtRisk, buyMishapInsurance, isMishapInsured, buySpeedBoost,
 } from './game.js';
 
 import { lbShareScore } from './leaderboard.js';
@@ -57,6 +57,7 @@ window.checkLevelUp    = checkLevelUp;
 
 // Crop art helpers (used by game.js for harvest-fork overlay)
 window._cropArt        = cropArt;
+window._cropArtWithPrestige = cropArtWithPrestige;
 window._CROP_THEME     = CROP_THEME;
 window._wateringCanCharge = wateringCanCharge;
 
@@ -81,6 +82,7 @@ window.selectFromStorage = selectFromStorage;
 window.tryPlant          = tryPlant;
 window.tryUnlockPlot     = tryUnlockPlot;
 window.unlockPlotBSV     = unlockPlotBSV;
+window.buyCompostBSV     = buyCompostBSV;
 
 // Harvest / farm
 window.harvestCrop       = harvestCrop;
@@ -98,6 +100,9 @@ window.showHarvestFork   = showHarvestFork;
 window.applyMishapPartial = applyMishapPartial;
 window.applyMishapTotal   = applyMishapTotal;
 window.getSeedingPlotsAtRisk = getSeedingPlotsAtRisk;
+window.buyMishapInsurance = buyMishapInsurance;
+window.isMishapInsured = isMishapInsured;
+window.buySpeedBoost = buySpeedBoost;
 
 // Merchant / events
 window.acceptMerchantDeal = acceptMerchantDeal;
@@ -201,15 +206,26 @@ function init() {
     if (overlay) { overlay.remove(); window._pendingBuyListing = null; }
   });
 
-  // ── Game tick (1 s) ─────────────────────────────────────
-  setInterval(() => {
-    if (!G) return;   // guard: G not yet initialized
-    window.G = G;     // keep window.G in sync with module-level G
-    tick();
-    renderPlotsOnly();
-    renderWateringCan();
-    renderCompost();
-  }, 1000);
+  // ── Game tick (3.3 s normal, 0.33 s with speed boost) ────
+  let _tickInterval = null;
+
+  function startTick() {
+    if (_tickInterval) clearInterval(_tickInterval);
+    const ms = G._speedBoostExpiry > Date.now() ? 330 : 3300;
+    _tickInterval = setInterval(() => {
+      if (!G) return;
+      window.G = G;
+      tick();
+      renderPlotsOnly();
+      renderWateringCan();
+      renderCompost();
+      renderMishapInsurance();
+      renderSpeedBoost();
+    }, ms);
+  }
+
+  window._restartTick = startTick;
+  startTick();
 }
 
 init();
