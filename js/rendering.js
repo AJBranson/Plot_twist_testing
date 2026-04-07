@@ -199,6 +199,7 @@ export function renderAll() {
   renderWateringCan();
   renderCompost();
   renderMishapInsurance();
+  renderSpeedBoost();
   if (MARKETPLACE_ENABLED) renderVegeStand();
   lbUpdateShareBtn();
 }
