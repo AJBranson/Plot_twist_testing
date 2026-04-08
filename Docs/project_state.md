@@ -6,6 +6,7 @@
 - Playable at: https://ajbranson.github.io/Plot_twist/
 - Vanilla ES modules, no build step, no frameworks.
 - Modular architecture: `index.html` → `js/main.js` → other modules.
+- Synthesized sound effects via Web Audio API with persistent mute toggle.
 - BSV wallet integration via Metanet.page platform SDK.
 - Cloud save and leaderboard via Supabase.
 
@@ -16,6 +17,7 @@
 | `index.html` | Application shell, all UI elements, inline onclick handlers |
 | `styles.css` | Game styles (~2100 lines) |
 | `js/main.js` | Entrypoint, init(), window.* global wiring, game tick loop |
+| `js/sound.js` | Web Audio sound effects, sound toggle state, audio unlock/resume handling |
 | `js/game-state.js` | Authoritative state (`G`), save/load (localStorage + cloud), tick logic, events, merchant |
 | `js/game.js` | Core actions: plant, harvest, water, compost, prestige, seed-saving, BSV payments |
 | `js/rendering.js` | DOM rendering functions, notifications, journal UI, all render* functions |
@@ -70,16 +72,25 @@
 - **Mishap Insurance**: 50 coins for 30 minutes protection on all seeding plots (only available when seeding plots exist, confirmation dialog)
 - **Speed Boost**: ₿0.01 BSV for 10× farm speed for 20 minutes (tick interval: 3.3s → 0.33s, confirmation dialog)
 
+### Audio system
+- New `js/sound.js` module uses synthesized Web Audio cues instead of external sound files
+- Header sound toggle button persists player preference in localStorage (`plot_twist_sound_enabled`)
+- Audio resumes safely after first user interaction to comply with browser autoplay restrictions
+- Dedicated sounds added for planting, harvesting, achievements, positive/negative random events, merchant arrival, merchant deal acceptance, plot unlocking, watering can use, and compost application
+- Watering can uses a short looped water effect timed to the progress-bar drain animation after use
+
 ### Random events
 - Events fire every 2-5 minutes (configurable via `EVENT_MIN_GAP` / `EVENT_MAX_GAP`)
 - Types: aphids, rain, crows, bees, frost, sun bonus, wandering merchant, seed weevils, late frost, strange wind
 - Events have fix (pay coins) and/or ignore options
 - **30-second auto-timeout**: events auto-dismiss as "ignored" if user is AFK
+- Positive and negative event popups now use different intro sounds
 - Event tracking: `_eventsEncountered`, `_eventsFixed`, `_sunBonusCount`, `_beeBoostCount`
 
 ### Wandering Merchant
 - Appears every 10-15 minutes for 3 minutes
 - Rotating deals: discounts, XP boosts, speed tonics, exotic seeds
+- Separate sound cues for merchant arrival and accepted deals
 - `_merchantDealsAccepted` counter — at 40 deals, exotic seeds may appear and Vege Stand unlocks
 
 ### Player marketplace (Vege Stand)
@@ -101,6 +112,7 @@
 - Farm achievements: harvest counts, coin earnings, plot unlocks, levels, prestige, diversity
 - Event achievements: first event, merchant deals, heritage seeds
 - Journal UI with tabs: crops, achievements, leaderboard
+- Achievement unlocks now trigger a celebratory sound in addition to the journal badge indicator
 
 ### Leaderboard
 - Supabase-backed (`lb_users` table)
@@ -168,6 +180,8 @@
 
 `js/main.js` imports all module functions and assigns them to `window.*` for inline `onclick` handlers. Some functions are prefixed with `_` for internal use by other modules (e.g., `window._cropArt`, `window._restartTick`).
 
+`js/main.js` also initializes the sound system and exposes `toggleSound()` for the header sound button.
+
 ## Testing
 
 - `tests/save_load.test.js` — roundtrip save/load, corrupted data recovery, personal best defaults
@@ -180,6 +194,5 @@
 - Polish marketplace / vege stand UX
 - Add more achievements or seasonal content
 - Add visual indicator on plots when speed boost is active
-- Add sound effects for events, harvests, achievements
 - Improve mobile responsiveness for smaller screens
 - Add export/import save functionality

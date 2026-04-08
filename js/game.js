@@ -8,7 +8,7 @@ import { getLevelData, prestigeMultiplier, canUnlockPlot, formatTime,
          checkLevelUp, isCropUnlocked, formatBSV } from './utils.js';
 import { checkAchievements } from './achievements.js';
 import { requestBSVPayment } from './bsv-payments.js';
-import { playEventSound, playHarvestSound, playPlantSound, playPlotUnlockSound, playWateringCanSound } from './sound.js';
+import { playCompostSound, playEventSound, playHarvestSound, playPlantSound, playPlotUnlockSound, playWateringCanSound } from './sound.js';
 
 // These are set up on window by main.js — avoids circular imports with rendering.js
 function notify(msg, type)  { if (window.notify)      window.notify(msg, type); }
@@ -332,6 +332,7 @@ export function applyFertiliser(idx) {
   if (G.compostCharges < COMPOST_MAX && G.compostLastCharged === 0) G.compostLastCharged = Date.now();
   G.fertiliseMode = false;
   saveGame(); renderPlots(); renderCompost();
+  playCompostSound();
   notify('🌿 Plot ' + (idx + 1) + ' fertilised! Next harvest +25% coins.', 'harvest');
 }
 

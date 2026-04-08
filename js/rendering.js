@@ -287,9 +287,12 @@ export function renderPlots() {
   const grid = document.getElementById('plots-grid');
   if (!grid) return;
   const now = Date.now();
+  const boostActive = G._speedBoostExpiry > now;
 
   grid.innerHTML = G.plots.map((plot, idx) => {
     const cost = PLOT_COSTS[idx];
+    const bc = boostActive && plot.unlocked ? ' speed-boost-active' : '';
+    const bb = boostActive && plot.unlocked ? '<div class="speed-boost-badge">⚡</div>' : '';
 
     if (!plot.unlocked) {
       const canAfford = G.coins >= cost;
@@ -318,11 +321,12 @@ export function renderPlots() {
         : isFertTarget ? `<span style="font-size:22px">🌿</span>`
         : `<span class="plus-sign">+</span>`;
       const clickHandler = G.fertiliseMode ? `applyFertiliser(${idx})` : `tryPlant(${idx})`;
-      return `<div class="plot-tile empty ${isTarget?'plant-target':''} ${isFertTarget?'fertilise-target':''}" data-idx="${idx}" onclick="${clickHandler}">
+      return `<div class="plot-tile empty ${isTarget?'plant-target':''} ${isFertTarget?'fertilise-target':''}${bc}" data-idx="${idx}" onclick="${clickHandler}">
         <div class="plot-visual">
           <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
           <div class="plot-overlay">${overlayContent}</div>
           ${plot.fertilised?'<div class="plot-fertilised-badge">🌿 +25%</div>':''}
+          ${bb}
         </div>
         <div class="plot-footer">Plot ${idx+1} — ${isFertTarget?'Tap to fertilise':isTarget?'Tap to plant':'Empty'}</div>
       </div>`;
@@ -334,7 +338,7 @@ export function renderPlots() {
       const displayPrice = Math.floor(crop.sellPrice * prestigeMultiplier() * (plot.fertilised?1.25:1));
       const cropSvg = cropArtWithPrestige(plot.cropId, G.prestige);
       if (crop.exotic) {
-        return `<div class="plot-tile ready exotic-ready" data-idx="${idx}" onclick="showHarvestFork(${idx})">
+        return `<div class="plot-tile ready exotic-ready${bc}" data-idx="${idx}" onclick="showHarvestFork(${idx})">
           <div class="plot-visual">
             <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
             <div class="plot-overlay" style="display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">
@@ -342,17 +346,19 @@ export function renderPlots() {
             </div>
             <div style="position:absolute;top:4px;right:4px;font-size:11px">✨</div>
             ${plot.fertilised?'<div class="plot-fertilised-badge">🌿 +25%</div>':''}
+            ${bb}
           </div>
           <div class="plot-footer"><span style="color:#FFD700;font-weight:800;font-size:11px">✨ Harvest or Seed?</span></div>
         </div>`;
       }
-      return `<div class="plot-tile ready" data-idx="${idx}" onclick="harvestCrop(${idx})">
+      return `<div class="plot-tile ready${bc}" data-idx="${idx}" onclick="harvestCrop(${idx})">
         <div class="plot-visual">
           <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
           <div class="plot-overlay" style="display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">
             ${cropSvg}
           </div>
           ${plot.fertilised?'<div class="plot-fertilised-badge">🌿 +25%</div>':''}
+          ${bb}
         </div>
         <div class="plot-footer"><span class="footer-harvest">✨ Harvest! +🪙${displayPrice}</span></div>
       </div>`;
@@ -365,7 +371,7 @@ export function renderPlots() {
       const r2 = 44, circ2 = 2*Math.PI*r2, offset2 = circ2*(1-elapsedFrac);
       const ringColour = plot.seedReady ? '#FFD700' : atRisk ? '#FF8C00' : '#A78BFA';
       if (plot.seedReady) {
-        return `<div class="plot-tile seeding seed-ready" data-idx="${idx}" onclick="collectSeeds(${idx})">
+        return `<div class="plot-tile seeding seed-ready${bc}" data-idx="${idx}" onclick="collectSeeds(${idx})">
           <div class="plot-visual">
             <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
             <div class="plot-overlay" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px">
@@ -376,11 +382,12 @@ export function renderPlots() {
               <circle class="progress-ring-bg" cx="50" cy="50" r="${r2}" stroke-width="5"/>
               <circle class="progress-ring-fill" cx="50" cy="50" r="${r2}" stroke-width="5" style="stroke:${ringColour}" stroke-dasharray="${circ2.toFixed(2)}" stroke-dashoffset="0"/>
             </svg>
+            ${bb}
           </div>
           <div class="plot-footer" style="color:#FFD700;font-weight:800;font-size:11px">🌱 Tap to collect seeds</div>
         </div>`;
       }
-      return `<div class="plot-tile seeding" data-idx="${idx}">
+      return `<div class="plot-tile seeding${bc}" data-idx="${idx}">
         <div class="plot-visual">
           <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
           <div class="plot-overlay" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px">
@@ -392,6 +399,7 @@ export function renderPlots() {
             <circle class="progress-ring-fill" cx="50" cy="50" r="${r2}" stroke-width="5" style="stroke:${ringColour}" stroke-dasharray="${circ2.toFixed(2)}" stroke-dashoffset="${offset2.toFixed(2)}"/>
           </svg>
           ${atRisk?'<span style="position:absolute;top:4px;right:4px;font-size:11px">⚠️</span>':''}
+          ${bb}
         </div>
         <div class="plot-footer" style="font-size:10px;color:${atRisk?'#FF8C00':'var(--text-dim)'}">${atRisk?`Seeding ⚠️ ${formatTime(remaining2)}`:`Going to seed… ${formatTime(remaining2)}`}</div>
       </div>`;
@@ -407,7 +415,7 @@ export function renderPlots() {
     const isFertTarget = G.fertiliseMode && !plot.fertilised;
     const clickHandler2 = G.fertiliseMode ? `applyFertiliser(${idx})` : '';
     const growingCropSvg = cropArtWithPrestige(plot.cropId, G.prestige);
-    return `<div class="plot-tile growing ${isFertTarget?'fertilise-target':''}" data-idx="${idx}" ${clickHandler2?`onclick="${clickHandler2}"`:''}>
+    return `<div class="plot-tile growing ${isFertTarget?'fertilise-target':''}${bc}" data-idx="${idx}" ${clickHandler2?`onclick="${clickHandler2}"`:''}>
       <div class="plot-visual">
         <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
         <div class="plot-overlay" style="display:flex;align-items:center;justify-content:center;overflow:hidden">
@@ -417,6 +425,7 @@ export function renderPlots() {
         </div>
         ${progressRingSVG(progress)}
         ${plot.fertilised?'<div class="plot-fertilised-badge">🌿 +25%</div>':''}
+        ${bb}
       </div>
       <div class="plot-footer">${isFertTarget?'🌿 Tap to fertilise':`${crop.name} — ${formatTime(remaining)}`}</div>
     </div>`;
@@ -427,9 +436,12 @@ export function renderPlotsOnly() {
   const grid = document.getElementById('plots-grid');
   if (!grid) return;
   const now = Date.now();
+  const boostActive = G._speedBoostExpiry > Date.now();
   G.plots.forEach((plot, idx) => {
     const tile = grid.querySelector(`[data-idx="${idx}"]`);
-    if (!tile || !plot.cropId || plot.ready || !plot.plantedAt) return;
+    if (!tile) return;
+    tile.classList.toggle('speed-boost-active', boostActive && plot.unlocked);
+    if (!plot.cropId || plot.ready || !plot.plantedAt) return;
     const crop = CROP_MAP[plot.cropId];
 
     tile.classList.toggle('seeding', plot.seeding);

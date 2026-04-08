@@ -498,6 +498,26 @@ button:active { transform: scale(0.95); }
   0%, 100% { box-shadow: 0 0 10px rgba(255,215,0,0.3); }
   50%       { box-shadow: 0 0 22px rgba(255,215,0,0.7); }
 }
+.plot-tile.speed-boost-active .plot-visual {
+  box-shadow: 0 0 10px rgba(255,165,0,0.3);
+  animation: pulse-speed-boost 1.2s ease-in-out infinite;
+}
+@keyframes pulse-speed-boost {
+  0%, 100% { box-shadow: 0 0 8px rgba(255,165,0,0.2); }
+  50%       { box-shadow: 0 0 20px rgba(255,165,0,0.65); }
+}
+.plot-tile.speed-boost-active .speed-boost-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-size: 10px;
+  z-index: 2;
+  animation: pulse-speed-dot 1.2s ease-in-out infinite;
+}
+@keyframes pulse-speed-dot {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1; }
+}
 
 .plot-footer {
   background: rgba(10,20,8,0.85);
