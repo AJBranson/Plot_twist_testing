@@ -12,6 +12,7 @@ import { G, loadGame, saveGame, DEFAULT_STATE, setUIHandlers, scheduleNextEvent,
          acceptMerchantDeal, dismissMerchant } from './game-state.js';
 import { connectWallet, disconnectWallet } from './wallet.js';
 import { buildAllAchievements, checkAchievements } from './achievements.js';
+import { initSound, toggleSound } from './sound.js';
 import { cropArt, cropArtWithPrestige, CROP_THEME, wateringCanCharge, getLevelData, checkLevelUp } from './utils.js';
 
 import {
@@ -48,6 +49,7 @@ window.shakeStat       = shakeStat;
 window.showFloatLabel  = showFloatLabel;
 window.showConfirm     = showConfirm;
 window.closeConfirm    = closeConfirm;
+window.toggleSound     = toggleSound;
 
 // Game state
 window.G               = null;   // set after loadGame below
@@ -127,6 +129,8 @@ window.changeListingQty   = changeListingQty;
 window.confirmListing     = confirmListing;
 // ── Initialization ────────────────────────────────────────
 function init() {
+  initSound();
+
   // Wire deferred UI handlers (breaks circular game-state ↔ rendering)
   setUIHandlers(notify, renderAll, renderPlots, checkAchievements, showSaveConflictChoice);
 

@@ -6,6 +6,7 @@ import { SAVE_KEY, GUEST_SAVE_KEY, COMPOST_MAX_CHARGES, CROP_MAP, EVENT_MIN_GAP,
          MERCHANT_MIN_GAP, MERCHANT_MAX_GAP, MERCHANT_DURATION, MERCHANT_DEALS } from './constants.js';
 import { getLevelData, checkLevelUp, formatTime } from './utils.js';
 import { fetchCloudSave, getWalletCacheKey, isCloudSaveAvailable, upsertCloudSave } from './cloud-save.js';
+import { playEventSound, playMerchantDealSound } from './sound.js';
 
 // ── Deferred UI handlers (avoids circular imports) ──────────
 let _notifyFn = null;
@@ -666,6 +667,7 @@ function showEventModal(ev) {
   }
   btns.innerHTML = html;
   document.getElementById('event-overlay').classList.remove('hidden');
+  playEventSound(ev.soundKind === 'positive' ? 'positive' : 'negative');
   G._eventsEncountered = (G._eventsEncountered || 0) + 1;
   window._currentEvent = { ev, cost };
 
@@ -723,6 +725,7 @@ function spawnMerchant() {
   dealBtn.textContent = deal.btnText;
   dealBtn.disabled = !deal.canAfford();
   document.getElementById('merchant-banner').classList.remove('hidden');
+  playEventSound('merchant');
   saveGame();
   scheduleNextMerchant();
 }
@@ -735,6 +738,7 @@ export function acceptMerchantDeal() {
   }
   G._merchantDealsAccepted = (G._merchantDealsAccepted || 0) + 1;
   window._merchantExecute();
+  playMerchantDealSound();
   window._merchantExecute = null;
   window._merchantCanAfford = null;
   G.merchantActive = false;

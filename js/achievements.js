@@ -4,6 +4,7 @@
 
 import { CROPS, EXOTIC_CROPS } from './constants.js';
 import { G, saveGame } from './game-state.js';
+import { playAchievementSound } from './sound.js';
 
 export const CROP_MILESTONES = [
   { key: 'first',    count: 1,   icon: '🌱', label: 'First Harvest' },
@@ -108,6 +109,7 @@ export function clearPendingAchievements() {
 
 export function checkAchievements() {
   let anyNew = false;
+  let newCount = 0;
   ALL_ACHIEVEMENTS.forEach(ach => {
     if (G.achievementsEarned.includes(ach.id)) return;
     const result = ach.check(G);
@@ -115,10 +117,12 @@ export function checkAchievements() {
       G.achievementsEarned.push(ach.id);
       _pendingNewAchievements.push(ach.id);
       anyNew = true;
+      newCount++;
     }
   });
   if (anyNew) {
     saveGame();
+    playAchievementSound(newCount);
     const dot = document.getElementById('journal-new-badge');
     if (dot) dot.style.display = 'inline-block';
   }

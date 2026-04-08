@@ -8,6 +8,7 @@ import { getLevelData, prestigeMultiplier, canUnlockPlot, formatTime,
          checkLevelUp, isCropUnlocked, formatBSV } from './utils.js';
 import { checkAchievements } from './achievements.js';
 import { requestBSVPayment } from './bsv-payments.js';
+import { playEventSound, playHarvestSound, playPlantSound, playPlotUnlockSound, playWateringCanSound } from './sound.js';
 
 // These are set up on window by main.js — avoids circular imports with rendering.js
 function notify(msg, type)  { if (window.notify)      window.notify(msg, type); }
@@ -50,6 +51,10 @@ export function applyEventModifiers(baseCoins) {
 export function resolveEvent(fix) {
   const { ev, cost } = window._currentEvent || {};
   if (!ev) return;
+  if (fix && cost > 0 && G.coins < cost) {
+    notify('🪙 Not enough coins!', 'error');
+    return;
+  }
   clearTimeout(window._eventTimeout);
   window._eventTimeout = null;
   window._currentEvent = null;
@@ -57,15 +62,16 @@ export function resolveEvent(fix) {
 
   if (fix) {
     if (cost > 0) {
-      if (G.coins < cost) { notify('🪙 Not enough coins!', 'error'); return; }
       G.coins -= cost;
       G._eventsFixed = (G._eventsFixed || 0) + 1;
     }
     ev.onFix && ev.onFix();
+    playEventSound('resolved');
     saveGame();
     renderAll();
   } else {
     ev.onIgnore && ev.onIgnore();
+    playEventSound('ignored');
   }
   checkAchievements();
 }
@@ -182,6 +188,7 @@ export function tryPlant(idx) {
 
   if (!(G.inventory[G.selectedCrop] > 0)) G.selectedCrop = null;
   saveGame(); renderAll();
+  playPlantSound(isHeritage);
   notify('🌱 Planted ' + (isHeritage ? '✨ Heritage ' : '') + crop.name + '! (' + formatTime(crop.gameSecs) + ')', 'harvest');
 }
 
@@ -193,6 +200,7 @@ export function tryUnlockPlot(idx) {
   G.coins -= cost;
   G.plots[idx].unlocked = true;
   checkAchievements(); saveGame(); renderAll();
+  playPlotUnlockSound();
   notify(`🔓 Plot ${idx + 1} unlocked!`, 'unlock');
 }
 
@@ -209,6 +217,7 @@ export function unlockPlotBSV(idx) {
       checkAchievements();
       saveGame();
       renderAll();
+      playPlotUnlockSound();
       const txSuffix = broadcast?.txid ? ' Tx ' + broadcast.txid.slice(0, 8) + '…' : '';
       notify(`🔓 Plot ${idx + 1} unlocked with BSV!` + txSuffix, 'unlock');
     },
@@ -257,6 +266,7 @@ export function harvestCrop(idx) {
   const baseSell = Math.floor(crop.sellPrice * prestigeMultiplier() * (plot.fertilised ? 1.25 : 1) * (plot.heritage ? 1.20 : 1));
   const earnedCoins = applyEventModifiers(baseSell);
   const wasFertilised = plot.fertilised;
+  const wasHeritage = plot.heritage;
   G.coins += earnedCoins;
   G.totalXP += crop.xp;
   plot.harvestedCount++;
@@ -269,6 +279,7 @@ export function harvestCrop(idx) {
   plot.cropId = null; plot.plantedAt = null; plot.ready = false;
   plot.fertilised = false; plot.heritage = false;
   saveGame(); renderAll();
+  playHarvestSound({ fertilised: wasFertilised, heritage: wasHeritage });
   showFloatLabel(`+🪙${earnedCoins}`, idx);
   notify(`✨ Harvested ${crop.name}! +🪙${earnedCoins}${wasFertilised ? ' 🌿+25%' : ''} +${crop.xp}XP`, 'harvest');
   if (G.level > prevLevel) {
@@ -296,6 +307,7 @@ export function useWateringCan() {
   });
   G.wateringCanLastUsed = Date.now();
   saveGame(); renderPlots(); renderWateringCan();
+  playWateringCanSound(1500);
   const btn = document.getElementById('watering-can-btn');
   if (btn) { btn.classList.add('can-splashing'); setTimeout(() => btn.classList.remove('can-splashing'), 500); }
   notify('💧 Watered ' + growing.length + ' crop' + (growing.length !== 1 ? 's' : '') + '! −10% grow time each.', 'harvest');
