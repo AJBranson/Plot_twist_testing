@@ -17,7 +17,7 @@ import { cropArt, cropArtWithPrestige, CROP_THEME, wateringCanCharge, getLevelDa
 
 import {
   renderAll, renderPlots, renderPlotsOnly, renderStorage, renderShop, renderCompost,
-  renderHeading, renderWateringCan, renderMishapInsurance, notify, shakeStat, showFloatLabel,
+  renderHeading, renderWateringCan, renderMishapInsurance, renderSpeedBoost, notify, shakeStat, showFloatLabel,
   openJournal, closeJournal, showJTab, closeConfirm, showConfirm, showSaveConflictChoice,
 } from './rendering.js';
 
@@ -46,6 +46,7 @@ window.renderShop      = renderShop;
 window.renderCompost   = renderCompost;
 window.renderHeading   = renderHeading;
 window.renderWateringCan = renderWateringCan;
+window.renderSpeedBoost = renderSpeedBoost;
 window.shakeStat       = shakeStat;
 window.showFloatLabel  = showFloatLabel;
 window.showConfirm     = showConfirm;
