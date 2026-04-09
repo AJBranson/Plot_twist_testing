@@ -434,45 +434,13 @@ export function renderPlots() {
   }).join('');
 }
 
-function renderReadyPlotTile(plot, idx, boostActive) {
-  const bc = boostActive && plot.unlocked ? ' speed-boost-active' : '';
-  const bb = boostActive && plot.unlocked ? '<div class="speed-boost-badge">⚡</div>' : '';
-  const crop = CROP_MAP[plot.cropId];
-  const displayPrice = Math.floor(crop.sellPrice * prestigeMultiplier() * (plot.fertilised ? 1.25 : 1));
-
-  if (crop.exotic) {
-    return `<div class="plot-tile ready exotic-ready${bc}" data-idx="${idx}" onclick="showHarvestFork(${idx})">
-      <div class="plot-visual">
-        <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
-        <div class="plot-overlay" style="display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">
-          <svg width="52" height="52" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 6px rgba(255,215,0,0.5))">${cropArt(plot.cropId)}</svg>
-        </div>
-        <div style="position:absolute;top:4px;right:4px;font-size:11px">✨</div>
-        ${plot.fertilised?'<div class="plot-fertilised-badge">🌿 +25%</div>':''}
-        ${bb}
-      </div>
-      <div class="plot-footer"><span style="color:#FFD700;font-weight:800;font-size:11px">✨ Harvest or Seed?</span></div>
-    </div>`;
-  }
-
-  return `<div class="plot-tile ready${bc}" data-idx="${idx}" onclick="harvestCrop(${idx})">
-    <div class="plot-visual">
-      <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
-      <div class="plot-overlay" style="display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">
-        ${cropArtWithPrestige(plot.cropId, G.prestige)}
-      </div>
-      ${plot.fertilised?'<div class="plot-fertilised-badge">🌿 +25%</div>':''}
-      ${bb}
-    </div>
-    <div class="plot-footer"><span class="footer-harvest">✨ Harvest! +🪙${displayPrice}</span></div>
-  </div>`;
-}
-
 export function renderPlotsOnly() {
   const grid = document.getElementById('plots-grid');
   if (!grid) return;
   const now = Date.now();
   const boostActive = G._speedBoostExpiry > Date.now();
+  let needsFullRender = false;
+
   G.plots.forEach((plot, idx) => {
     const tile = grid.querySelector(`[data-idx="${idx}"]`);
     if (!tile) return;
@@ -480,7 +448,7 @@ export function renderPlotsOnly() {
 
     if (plot.ready) {
       if (!tile.classList.contains('ready')) {
-        tile.outerHTML = renderReadyPlotTile(plot, idx, boostActive);
+        needsFullRender = true;
       }
       return;
     }
@@ -550,6 +518,8 @@ export function renderPlotsOnly() {
     const footer = tile.querySelector('.plot-footer');
     if (footer) footer.textContent = `${crop.name} — ${formatTime(remaining)}`;
   });
+
+  if (needsFullRender) renderPlots();
 }
 
 export function renderStorage() {
