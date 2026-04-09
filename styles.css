@@ -484,12 +484,10 @@ button:active { transform: scale(0.95); }
 .plot-tile.ready .plot-visual {
   border: 2px solid var(--ready-glow);
   box-shadow: 0 0 16px rgba(154,255,80,0.5);
-  animation: pulse-ready 1.2s ease-in-out infinite;
 }
 .plot-tile.exotic-ready .plot-visual {
   border: 2px solid #FFD700;
   box-shadow: 0 0 16px rgba(255,215,0,0.5);
-  animation: pulse-exotic 1.4s ease-in-out infinite;
 }
 .plot-tile.seeding .plot-visual {
   border: 2px solid #A78BFA;
@@ -572,6 +570,42 @@ button:active { transform: scale(0.95); }
 .crop-art {
   transition: transform 0.5s ease, opacity 0.5s ease;
   transform-origin: bottom center;
+}
+
+.ready-crop-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  will-change: transform;
+}
+
+.ready-crop-art svg {
+  display: block;
+  width: 60px;
+  height: 60px;
+}
+
+.exotic-crop-art svg {
+  width: 56px;
+  height: 56px;
+}
+
+body.embedded-runtime .plot-visual,
+body.embedded-runtime .plot-tile.ready .plot-visual,
+body.embedded-runtime .plot-tile.exotic-ready .plot-visual,
+body.embedded-runtime .plot-tile.seed-ready .plot-visual,
+body.embedded-runtime .plot-tile.speed-boost-active .plot-visual,
+body.embedded-runtime .crop-art,
+body.embedded-runtime .progress-ring-fill,
+body.embedded-runtime .speed-boost-badge {
+  animation: none !important;
+  transition: none !important;
+}
+
+body.embedded-runtime .plot-overlay svg {
+  filter: none !important;
 }
 
 /* Harvest sparkle */

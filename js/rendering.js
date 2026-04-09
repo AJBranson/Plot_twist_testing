@@ -343,8 +343,10 @@ export function renderPlots() {
         return `<div class="plot-tile ready exotic-ready${bc}" data-idx="${idx}" onclick="showHarvestFork(${idx})">
           <div class="plot-visual">
             <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
-            <div class="plot-overlay" style="display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">
-              <svg width="52" height="52" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 6px rgba(255,215,0,0.5))">${cropArt(plot.cropId)}</svg>
+            <div class="plot-overlay" style="display:flex;align-items:center;justify-content:center;overflow:hidden">
+              <div class="crop-art ready-crop-art exotic-crop-art" style="transform:scale(0.82) translateY(-6px);opacity:1;transform-origin:center center">
+                <svg width="56" height="56" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 6px rgba(255,215,0,0.5))">${cropArt(plot.cropId)}</svg>
+              </div>
             </div>
             <div style="position:absolute;top:4px;right:4px;font-size:11px">✨</div>
             ${plot.fertilised?'<div class="plot-fertilised-badge">🌿 +25%</div>':''}
@@ -356,8 +358,10 @@ export function renderPlots() {
       return `<div class="plot-tile ready${bc}" data-idx="${idx}" onclick="harvestCrop(${idx})">
         <div class="plot-visual">
           <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
-          <div class="plot-overlay" style="display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px">
-            ${cropSvg}
+          <div class="plot-overlay" style="display:flex;align-items:center;justify-content:center;overflow:hidden">
+            <div class="crop-art ready-crop-art" style="transform:scale(0.82) translateY(-6px);opacity:1;transform-origin:center center">
+              ${cropSvg}
+            </div>
           </div>
           ${plot.fertilised?'<div class="plot-fertilised-badge">🌿 +25%</div>':''}
           ${bb}

@@ -36,7 +36,8 @@ import { setMarketFilter, setMarketSort, refreshMarket, executePurchase,
          toggleStandOpen, showListingModal, updateListingModal, changeListingQty, confirmListing } from './marketplace.js';
 import { spinDailyWheel, closeDailyWheel, scheduleDailyWheel } from './daily-wheel.js';
 
-const BUILD_ID = '2026-04-09-ready-render-fix-4';
+const BUILD_ID = '2026-04-09-ready-render-fix-5';
+const EMBEDDED_RUNTIME = window.parent !== window || !!window.platformSDK;
 
 // ── Expose window globals ─────────────────────────────────
 // Rendering helpers (used by game.js via window.*)
@@ -138,7 +139,11 @@ window.closeDailyWheel    = closeDailyWheel;
 // ── Initialization ────────────────────────────────────────
 function init() {
   window.PLOT_TWIST_BUILD = BUILD_ID;
+  window.PLOT_TWIST_EMBEDDED = EMBEDDED_RUNTIME;
   console.info('[Plot Twist] Build', BUILD_ID);
+  console.info('[Plot Twist] Embedded runtime', EMBEDDED_RUNTIME);
+
+  document.body.classList.toggle('embedded-runtime', EMBEDDED_RUNTIME);
 
   initSound();
 
@@ -235,7 +240,8 @@ function init() {
       window.G = G;
       const changed = tick();
       if (!changed) {
-        renderPlotsOnly();
+        if (EMBEDDED_RUNTIME) renderPlots();
+        else renderPlotsOnly();
         renderWateringCan();
         renderCompost();
         renderMishapInsurance();
