@@ -13,7 +13,6 @@ import { renderLeaderboardTab, lbUpdateShareBtn } from './leaderboard.js';
 let _currentJTab = 'crops';
 let _lastPersonalBestPulseToken = 0;
 let _personalBestPulseTimeout = null;
-const _plotSvgBlobUrlCache = new Map();
 
 // ============================================================
 // WATERING CAN
@@ -192,20 +191,50 @@ function insuranceSVG() {
 // ============================================================
 // MAIN RENDER FUNCTIONS
 // ============================================================
-function svgToDataUri(svgMarkup) {
-  return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svgMarkup);
+function embeddedCropEmoji(cropId) {
+  const emojiMap = {
+    radish: '🌱',
+    lettuce: '🥬',
+    spinach: '🥬',
+    zucchini: '🥒',
+    beans: '🫛',
+    peas: '🫛',
+    cucumber: '🥒',
+    beetroot: '🌱',
+    carrot: '🥕',
+    cabbage: '🥬',
+    tomato: '🍅',
+    corn: '🌽',
+    broccoli: '🥦',
+    capsicum: '🌶️',
+    cauliflower: '🥦',
+    sunflower: '🌻',
+    onion: '🧅',
+    potato: '🥔',
+    pumpkin: '🎃',
+    garlic: '🧄',
+    dragonfruit: '🐉',
+    saffron: '🌸',
+    vanilla: '🌼',
+    truffle: '🍄',
+  };
+  return emojiMap[cropId] || '🌿';
 }
 
-function svgToBlobUrl(svgMarkup) {
-  if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function' || typeof Blob === 'undefined') {
-    return null;
-  }
-  const cached = _plotSvgBlobUrlCache.get(svgMarkup);
-  if (cached) return cached;
-  const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  _plotSvgBlobUrlCache.set(svgMarkup, url);
-  return url;
+function renderEmbeddedCropBadge(cropId, { isExotic = false, simple = false } = {}) {
+  const crop = CROP_MAP[cropId];
+  const theme = CROP_THEME[cropId] || { bg: '#223020', border: 'rgba(255,255,255,0.25)' };
+  const label = crop ? crop.name : cropId;
+  const classes = [
+    'plot-crop-badge',
+    simple ? 'simple' : '',
+    isExotic ? 'exotic' : '',
+  ].filter(Boolean).join(' ');
+  return `<div class="${classes}" style="--crop-bg:${theme.bg};--crop-border:${theme.border};" aria-label="${label}" title="${label}">
+    <span class="plot-crop-badge__leaf plot-crop-badge__leaf--left"></span>
+    <span class="plot-crop-badge__leaf plot-crop-badge__leaf--right"></span>
+    <span class="plot-crop-badge__emoji">${embeddedCropEmoji(cropId)}</span>
+  </div>`;
 }
 
 function renderPlotCropMedia(cropId, prestige, { isExotic = false, simple = false, imgClass = 'plot-crop-img' } = {}) {
@@ -216,8 +245,7 @@ function renderPlotCropMedia(cropId, prestige, { isExotic = false, simple = fals
 
   if (!isEmbedded) return svgMarkup;
 
-  const imageUrl = svgToBlobUrl(svgMarkup) || svgToDataUri(svgMarkup);
-  return `<img class="${imgClass}" src="${imageUrl}" alt="" draggable="false" />`;
+  return renderEmbeddedCropBadge(cropId, { isExotic, simple, imgClass });
 }
 
 export function renderAll() {
@@ -516,7 +544,7 @@ export function renderPlotsOnly() {
       if (overlay) {
         overlay.innerHTML = plot.seedReady
           ? `<div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px"><div style="font-size:28px;filter:drop-shadow(0 0 6px gold)">🌱</div><div style="font-size:9px;color:#FFD700;font-weight:800">Seeds Ready!</div></div>`
-          : `<div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px"><div style="opacity:0.5;transform:scale(0.7) translateY(4px)"><svg width="52" height="52" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="filter:grayscale(60%)">${cropArt(plot.cropId)}</svg></div><div style="font-size:9px;color:${atRisk?'#FF8C00':'#A78BFA'};font-weight:700">${atRisk?'⚠️ At risk':'🌱 Seeding…'}</div></div>`;
+          : `<div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px"><div style="opacity:0.5;transform:scale(0.7) translateY(4px)">${renderPlotCropMedia(plot.cropId, G.prestige, { simple: true, imgClass: 'plot-crop-img seeding-crop-img' })}</div><div style="font-size:9px;color:${atRisk?'#FF8C00':'#A78BFA'};font-weight:700">${atRisk?'⚠️ At risk':'🌱 Seeding…'}</div></div>`;
       }
 
       if (plot.seedReady) {
@@ -534,8 +562,13 @@ export function renderPlotsOnly() {
     const opacity = 0.4 + progress * 0.6;
     const artEl = tile.querySelector('.crop-art');
     if (artEl) {
-      artEl.style.transform = `scale(${scale.toFixed(3)}) translateY(${(-(scale*8)).toFixed(1)}px)`;
-      artEl.style.opacity = opacity.toFixed(3);
+      if (window.PLOT_TWIST_EMBEDDED) {
+        artEl.style.transform = 'scale(0.82) translateY(-6px)';
+        artEl.style.opacity = '1';
+      } else {
+        artEl.style.transform = `scale(${scale.toFixed(3)}) translateY(${(-(scale*8)).toFixed(1)}px)`;
+        artEl.style.opacity = opacity.toFixed(3);
+      }
     }
     const ringFill = tile.querySelector('.progress-ring-fill');
     if (ringFill) {

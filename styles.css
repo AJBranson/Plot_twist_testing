@@ -438,6 +438,7 @@ button:active { transform: scale(0.95); }
   inset: 0;
   width: 100%;
   height: 100%;
+  z-index: 0;
 }
 
 .plot-overlay {
@@ -446,6 +447,7 @@ button:active { transform: scale(0.95); }
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2;
 }
 
 .plot-label {
@@ -561,6 +563,7 @@ button:active { transform: scale(0.95); }
   height: 100%;
   transform: rotate(-90deg);
   pointer-events: none;
+  z-index: 3;
 }
 
 .progress-ring-bg { fill: none; stroke: rgba(255,255,255,0.06); }
@@ -577,6 +580,76 @@ button:active { transform: scale(0.95); }
   width: 60px;
   height: 60px;
   object-fit: contain;
+}
+
+.plot-crop-badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 18px 18px 22px 22px;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.22), transparent 38%),
+    linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.18)),
+    var(--crop-bg, #223020);
+  border: 2px solid var(--crop-border, rgba(255,255,255,0.22));
+  box-shadow: 0 8px 18px rgba(0,0,0,0.24);
+}
+
+.plot-crop-badge.simple {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px 14px 18px 18px;
+}
+
+.plot-crop-badge.exotic {
+  box-shadow: 0 0 0 1px rgba(255,215,0,0.35), 0 10px 22px rgba(0,0,0,0.28);
+}
+
+.plot-crop-badge__leaf {
+  position: absolute;
+  top: -5px;
+  width: 12px;
+  height: 18px;
+  border-radius: 80% 10% 80% 10%;
+  background: linear-gradient(180deg, #9BE15D, #3E8E41);
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.18);
+}
+
+.plot-crop-badge__leaf--left {
+  left: 17px;
+  transform: rotate(-28deg);
+}
+
+.plot-crop-badge__leaf--right {
+  right: 17px;
+  transform: scaleX(-1) rotate(-28deg);
+}
+
+.plot-crop-badge.simple .plot-crop-badge__leaf {
+  top: -4px;
+  width: 10px;
+  height: 14px;
+}
+
+.plot-crop-badge.simple .plot-crop-badge__leaf--left {
+  left: 12px;
+}
+
+.plot-crop-badge.simple .plot-crop-badge__leaf--right {
+  right: 12px;
+}
+
+.plot-crop-badge__emoji {
+  font-size: 29px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.22));
+}
+
+.plot-crop-badge.simple .plot-crop-badge__emoji {
+  font-size: 23px;
 }
 
 .ready-crop-art {
@@ -629,6 +702,20 @@ body.embedded-runtime .speed-boost-badge {
 
 body.embedded-runtime .plot-overlay svg {
   filter: none !important;
+}
+
+body.embedded-runtime .plot-crop-badge {
+  animation: none !important;
+  transition: none !important;
+}
+
+body.embedded-runtime .plot-overlay {
+  z-index: 4;
+}
+
+body.embedded-runtime .crop-art {
+  transform: scale(0.82) translateY(-6px) !important;
+  opacity: 1 !important;
 }
 
 /* Harvest sparkle */
