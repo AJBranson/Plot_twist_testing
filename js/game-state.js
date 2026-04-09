@@ -114,6 +114,8 @@ export const DEFAULT_STATE = {
   standUnlocked: false,
   _mishapInsuranceExpiry: 0,
   _speedBoostExpiry: 0,
+  firstPlayedAt: 0,
+  lastDailyWheelSpin: 0,
 };
 
 export function hasUnlockedVegeStand() {
@@ -262,9 +264,11 @@ function buildSaveData(state = G) {
     standEnabled: state.standEnabled !== false,
     standUnlocked: state.standUnlocked !== false,
     standMaxSlots: state.standMaxSlots || 3,
-    _mishapInsuranceExpiry: state._mishapInsuranceExpiry || 0,
-    _speedBoostExpiry: state._speedBoostExpiry || 0,
-  };
+  _mishapInsuranceExpiry: state._mishapInsuranceExpiry || 0,
+  _speedBoostExpiry: state._speedBoostExpiry || 0,
+  firstPlayedAt: state.firstPlayedAt || 0,
+  lastDailyWheelSpin: state.lastDailyWheelSpin || 0,
+};
 }
 
 function applySaveData(saved, { walletConnected = false, walletAddress = null } = {}) {
@@ -272,6 +276,7 @@ function applySaveData(saved, { walletConnected = false, walletAddress = null } 
   if (!saved) {
     next.walletConnected = walletConnected;
     next.walletAddress = walletAddress;
+    next.firstPlayedAt = Date.now();
     G = next;
     syncPersonalBestScore({ notifyOnChange: false, queueEffects: false });
     return G;
@@ -314,7 +319,11 @@ function applySaveData(saved, { walletConnected = false, walletAddress = null } 
   next.standMaxSlots = Number.isInteger(saved.standMaxSlots) ? saved.standMaxSlots : 3;
   next._mishapInsuranceExpiry = saved._mishapInsuranceExpiry || 0;
   next._speedBoostExpiry = saved._speedBoostExpiry || 0;
+  next.firstPlayedAt = saved.firstPlayedAt || 0;
+  next.lastDailyWheelSpin = saved.lastDailyWheelSpin || 0;
   next.fertiliseMode = false;
+
+  if (!next.firstPlayedAt) next.firstPlayedAt = Date.now();
 
   if (Array.isArray(saved.plots)) {
     saved.plots.forEach((sp, i) => {

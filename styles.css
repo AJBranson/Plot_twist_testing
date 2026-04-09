@@ -119,6 +119,8 @@ button:active { transform: scale(0.95); }
   font-weight: 700;
   white-space: nowrap;
   flex-shrink: 0;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .stat-pill .icon { font-size: 15px; }
@@ -205,6 +207,8 @@ button:active { transform: scale(0.95); }
   padding: 5px 12px;
   flex: 0 0 228px;
   width: 228px;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .level-top {
@@ -262,8 +266,8 @@ button:active { transform: scale(0.95); }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 108px;
-  padding: 7px 12px;
+  min-width: 42px;
+  padding: 7px 10px;
   border-radius: 999px;
   border: 1px solid rgba(125, 211, 252, 0.28);
   background: rgba(125, 211, 252, 0.08);
@@ -527,6 +531,8 @@ button:active { transform: scale(0.95); }
   color: var(--text-dim);
   text-align: center;
   border-top: 1px solid var(--border);
+  overflow-wrap: break-word;
+  word-break: break-word;
   border-radius: 0 0 var(--radius) var(--radius);
   white-space: nowrap;
   overflow: hidden;
@@ -1094,9 +1100,9 @@ button:active { transform: scale(0.95); }
   }
 
   .level-pill {
-    flex: 0 1 220px;
-    width: 220px;
-    min-width: min(100%, 220px);
+    flex: 0 1 180px;
+    width: 180px;
+    min-width: min(100%, 180px);
   }
 
   .bsv-pill {
@@ -1653,6 +1659,191 @@ button:active { transform: scale(0.95); }
   box-shadow: 0 20px 60px rgba(0,0,0,0.7);
   animation: card-pop 0.25s cubic-bezier(0.34,1.56,0.64,1);
 }
+
+/* ============================================================
+   DAILY REWARD WHEEL
+   ============================================================ */
+#wheel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 460;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fade-in 0.25s ease;
+}
+#wheel-overlay.hidden { display: none; }
+
+#wheel-card {
+  background: linear-gradient(160deg, #1A2E16 0%, #0F1A0C 100%);
+  border: 2px solid rgba(255,209,64,0.3);
+  border-radius: 20px;
+  padding: 20px 18px 18px;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 30px rgba(255,209,64,0.1);
+  animation: card-pop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+#wheel-title {
+  font-family: var(--ff-head);
+  font-size: 22px;
+  color: #FFD700;
+  text-align: center;
+  margin-bottom: 14px;
+  text-shadow: 0 2px 8px rgba(255,215,0,0.3);
+}
+
+#wheel-sections {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.wheel-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border-radius: 10px;
+  border: 2px solid rgba(255,255,255,0.08);
+  transition: border-color 0.08s, box-shadow 0.08s, transform 0.08s;
+  min-height: 62px;
+}
+
+.wheel-section-name {
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  line-height: 1.1;
+}
+
+.wheel-section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.wheel-section-qty {
+  font-size: 11px;
+  font-weight: 800;
+  color: #FFD700;
+}
+
+.wheel-section.wheel-highlight {
+  border-color: #FFD700;
+  box-shadow: 0 0 14px rgba(255,215,0,0.6), inset 0 0 8px rgba(255,215,0,0.15);
+  transform: scale(1.08);
+  z-index: 1;
+}
+
+.wheel-section.wheel-highlight .wheel-section-name {
+  color: #fff;
+}
+.wheel-section.wheel-highlight .wheel-section-qty {
+  color: #FFF8DC;
+  text-shadow: 0 0 6px rgba(255,215,0,0.5);
+}
+
+#wheel-result {
+  text-align: center;
+  min-height: 24px;
+}
+
+.wheel-prize-announcement {
+  font-family: var(--ff-head);
+  font-size: 16px;
+  color: #FFD700;
+  font-weight: 800;
+  animation: wheel-prize-pop 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  text-shadow: 0 2px 10px rgba(255,215,0,0.4);
+}
+
+@keyframes wheel-prize-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+#wheel-btns {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+#wheel-spin-btn {
+  background: linear-gradient(135deg, #FFD700, #FFA000);
+  color: #1A1A0A;
+  border: none;
+  border-radius: 14px;
+  padding: 10px 32px;
+  font-size: 16px;
+  font-weight: 800;
+  font-family: var(--ff-head);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 16px rgba(255,215,0,0.3);
+}
+#wheel-spin-btn:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 6px 24px rgba(255,215,0,0.5);
+}
+#wheel-spin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+#wheel-close-btn {
+  background: rgba(111,207,58,0.15);
+  color: var(--green-hi);
+  border: 1px solid rgba(111,207,58,0.35);
+  border-radius: 14px;
+  padding: 10px 28px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--ff-head);
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+#wheel-close-btn:hover {
+  background: rgba(111,207,58,0.25);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 480px) {
+  #wheel-card {
+    padding: 14px 12px 14px;
+    border-radius: 16px;
+  }
+  #wheel-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  .wheel-section {
+    padding: 6px 2px;
+    min-height: 52px;
+    border-radius: 8px;
+  }
+  .wheel-section-name { font-size: 8px; }
+  .wheel-section-qty { font-size: 10px; }
+  .wheel-section-icon svg { width: 22px; height: 22px; }
+  .wheel-prize-announcement { font-size: 14px; }
+}
+@media (max-width: 360px) {
+  #wheel-sections {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 #event-overlay {
   position: fixed;
   inset: 0;

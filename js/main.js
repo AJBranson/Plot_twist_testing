@@ -34,6 +34,7 @@ import { lbShareScore } from './leaderboard.js';
 import { setMarketFilter, setMarketSort, refreshMarket, executePurchase,
          listSeeds, cancelListing, showBuyConfirm, openVegeStand,
          toggleStandOpen, showListingModal, updateListingModal, changeListingQty, confirmListing } from './marketplace.js';
+import { spinDailyWheel, closeDailyWheel, scheduleDailyWheel } from './daily-wheel.js';
 
 // ── Expose window globals ─────────────────────────────────
 // Rendering helpers (used by game.js via window.*)
@@ -127,6 +128,10 @@ window.showListingModal   = showListingModal;
 window.updateListingModal = updateListingModal;
 window.changeListingQty   = changeListingQty;
 window.confirmListing     = confirmListing;
+
+// Daily wheel
+window.spinDailyWheel     = spinDailyWheel;
+window.closeDailyWheel    = closeDailyWheel;
 // ── Initialization ────────────────────────────────────────
 function init() {
   initSound();
@@ -169,6 +174,8 @@ function init() {
   scheduleNextMerchant();
   restoreMerchantIfActive();
 
+  scheduleDailyWheel();
+
   // ── Keyboard shortcuts ──────────────────────────────────
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
@@ -176,6 +183,7 @@ function init() {
       document.getElementById('event-overlay')?.classList.add('hidden');
       document.getElementById('confirm-overlay')?.classList.add('hidden');
       document.getElementById('harvest-fork-overlay')?.remove();
+      document.getElementById('wheel-overlay')?.classList.add('hidden');
       if (G.fertiliseMode) {
         G.fertiliseMode = false;
         renderPlots();
