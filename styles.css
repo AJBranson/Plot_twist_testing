@@ -587,7 +587,19 @@ button:active { transform: scale(0.95); }
   height: 60px;
 }
 
+.ready-crop-art img {
+  display: block;
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
 .exotic-crop-art svg {
+  width: 56px;
+  height: 56px;
+}
+
+.exotic-crop-art img {
   width: 56px;
   height: 56px;
 }

@@ -191,6 +191,22 @@ function insuranceSVG() {
 // ============================================================
 // MAIN RENDER FUNCTIONS
 // ============================================================
+function svgToDataUri(svgMarkup) {
+  return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svgMarkup);
+}
+
+function renderReadyCropMedia(cropId, prestige, isExotic = false) {
+  const isEmbedded = !!window.PLOT_TWIST_EMBEDDED;
+  const svgMarkup = isExotic
+    ? `<svg width="56" height="56" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">${cropArt(cropId)}</svg>`
+    : cropArtWithPrestige(cropId, prestige);
+
+  if (!isEmbedded) return svgMarkup;
+
+  const imgClass = isExotic ? 'ready-crop-img exotic-ready-crop-img' : 'ready-crop-img';
+  return `<img class="${imgClass}" src="${svgToDataUri(svgMarkup)}" alt="${cropId}" draggable="false" />`;
+}
+
 export function renderAll() {
   if (!G) return;
   renderStats();
@@ -338,14 +354,14 @@ export function renderPlots() {
 
     if (plot.ready) {
       const displayPrice = Math.floor(crop.sellPrice * prestigeMultiplier() * (plot.fertilised?1.25:1));
-      const cropSvg = cropArtWithPrestige(plot.cropId, G.prestige);
+      const cropSvg = renderReadyCropMedia(plot.cropId, G.prestige, false);
       if (crop.exotic) {
         return `<div class="plot-tile ready exotic-ready${bc}" data-idx="${idx}" onclick="showHarvestFork(${idx})">
           <div class="plot-visual">
             <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
             <div class="plot-overlay" style="display:flex;align-items:center;justify-content:center;overflow:hidden">
               <div class="crop-art ready-crop-art exotic-crop-art" style="transform:scale(0.82) translateY(-6px);opacity:1;transform-origin:center center">
-                <svg width="56" height="56" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 6px rgba(255,215,0,0.5))">${cropArt(plot.cropId)}</svg>
+                ${renderReadyCropMedia(plot.cropId, G.prestige, true)}
               </div>
             </div>
             <div style="position:absolute;top:4px;right:4px;font-size:11px">✨</div>
