@@ -629,8 +629,10 @@ export function tick() {
       saveGame();
       renderAll();
     }
+    return changed;
   } catch(e) {
     console.error('Game tick error:', e);
+    return false;
   }
 }
 

@@ -439,7 +439,6 @@ export function renderPlotsOnly() {
   if (!grid) return;
   const now = Date.now();
   const boostActive = G._speedBoostExpiry > Date.now();
-  let needsFullRender = false;
 
   G.plots.forEach((plot, idx) => {
     const tile = grid.querySelector(`[data-idx="${idx}"]`);
@@ -447,9 +446,6 @@ export function renderPlotsOnly() {
     tile.classList.toggle('speed-boost-active', boostActive && plot.unlocked);
 
     if (plot.ready) {
-      if (!tile.classList.contains('ready')) {
-        needsFullRender = true;
-      }
       return;
     }
 
@@ -518,8 +514,6 @@ export function renderPlotsOnly() {
     const footer = tile.querySelector('.plot-footer');
     if (footer) footer.textContent = `${crop.name} — ${formatTime(remaining)}`;
   });
-
-  if (needsFullRender) renderPlots();
 }
 
 export function renderStorage() {

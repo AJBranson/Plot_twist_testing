@@ -227,12 +227,14 @@ function init() {
     _tickInterval = setInterval(() => {
       if (!G) return;
       window.G = G;
-      tick();
-      renderPlotsOnly();
-      renderWateringCan();
-      renderCompost();
-      renderMishapInsurance();
-      renderSpeedBoost();
+      const changed = tick();
+      if (!changed) {
+        renderPlotsOnly();
+        renderWateringCan();
+        renderCompost();
+        renderMishapInsurance();
+        renderSpeedBoost();
+      }
     }, ms);
   }
 
