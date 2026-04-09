@@ -36,7 +36,7 @@ import { setMarketFilter, setMarketSort, refreshMarket, executePurchase,
          toggleStandOpen, showListingModal, updateListingModal, changeListingQty, confirmListing } from './marketplace.js';
 import { spinDailyWheel, closeDailyWheel, scheduleDailyWheel } from './daily-wheel.js';
 
-const BUILD_ID = '2026-04-09-usd_pricing_v1';  // increment for each prod build, used for cache-busting and save compatibility checks
+const BUILD_ID = '2026-04-09-usd_pricing_v2';  // increment for each prod build, used for cache-busting and save compatibility checks
 const EMBEDDED_RUNTIME = window.parent !== window || !!window.platformSDK;
 
 // ── Expose window globals ─────────────────────────────────
