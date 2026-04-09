@@ -572,6 +572,13 @@ button:active { transform: scale(0.95); }
   transform-origin: bottom center;
 }
 
+.crop-art img {
+  display: block;
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
 .ready-crop-art {
   display: flex;
   align-items: center;
@@ -602,6 +609,10 @@ button:active { transform: scale(0.95); }
 .exotic-crop-art img {
   width: 56px;
   height: 56px;
+}
+
+.seeding-crop-img {
+  filter: grayscale(60%);
 }
 
 body.embedded-runtime .plot-visual,

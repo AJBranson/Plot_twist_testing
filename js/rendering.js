@@ -13,6 +13,7 @@ import { renderLeaderboardTab, lbUpdateShareBtn } from './leaderboard.js';
 let _currentJTab = 'crops';
 let _lastPersonalBestPulseToken = 0;
 let _personalBestPulseTimeout = null;
+const _plotSvgBlobUrlCache = new Map();
 
 // ============================================================
 // WATERING CAN
@@ -195,16 +196,28 @@ function svgToDataUri(svgMarkup) {
   return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svgMarkup);
 }
 
-function renderReadyCropMedia(cropId, prestige, isExotic = false) {
+function svgToBlobUrl(svgMarkup) {
+  if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function' || typeof Blob === 'undefined') {
+    return null;
+  }
+  const cached = _plotSvgBlobUrlCache.get(svgMarkup);
+  if (cached) return cached;
+  const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  _plotSvgBlobUrlCache.set(svgMarkup, url);
+  return url;
+}
+
+function renderPlotCropMedia(cropId, prestige, { isExotic = false, simple = false, imgClass = 'plot-crop-img' } = {}) {
   const isEmbedded = !!window.PLOT_TWIST_EMBEDDED;
-  const svgMarkup = isExotic
-    ? `<svg width="56" height="56" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">${cropArt(cropId)}</svg>`
+  const svgMarkup = isExotic || simple
+    ? `<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">${cropArt(cropId)}</svg>`
     : cropArtWithPrestige(cropId, prestige);
 
   if (!isEmbedded) return svgMarkup;
 
-  const imgClass = isExotic ? 'ready-crop-img exotic-ready-crop-img' : 'ready-crop-img';
-  return `<img class="${imgClass}" src="${svgToDataUri(svgMarkup)}" alt="${cropId}" draggable="false" />`;
+  const imageUrl = svgToBlobUrl(svgMarkup) || svgToDataUri(svgMarkup);
+  return `<img class="${imgClass}" src="${imageUrl}" alt="" draggable="false" />`;
 }
 
 export function renderAll() {
@@ -354,14 +367,14 @@ export function renderPlots() {
 
     if (plot.ready) {
       const displayPrice = Math.floor(crop.sellPrice * prestigeMultiplier() * (plot.fertilised?1.25:1));
-      const cropSvg = renderReadyCropMedia(plot.cropId, G.prestige, false);
+      const cropSvg = renderPlotCropMedia(plot.cropId, G.prestige, { imgClass: 'ready-crop-img' });
       if (crop.exotic) {
         return `<div class="plot-tile ready exotic-ready${bc}" data-idx="${idx}" onclick="showHarvestFork(${idx})">
           <div class="plot-visual">
             <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
             <div class="plot-overlay" style="display:flex;align-items:center;justify-content:center;overflow:hidden">
               <div class="crop-art ready-crop-art exotic-crop-art" style="transform:scale(0.82) translateY(-6px);opacity:1;transform-origin:center center">
-                ${renderReadyCropMedia(plot.cropId, G.prestige, true)}
+                ${renderPlotCropMedia(plot.cropId, G.prestige, { isExotic: true, imgClass: 'ready-crop-img exotic-ready-crop-img' })}
               </div>
             </div>
             <div style="position:absolute;top:4px;right:4px;font-size:11px">✨</div>
@@ -413,7 +426,7 @@ export function renderPlots() {
         <div class="plot-visual">
           <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
           <div class="plot-overlay" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px">
-            <div style="opacity:0.5;transform:scale(0.7) translateY(4px)"><svg width="52" height="52" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="filter:grayscale(60%)">${cropArt(plot.cropId)}</svg></div>
+            <div style="opacity:0.5;transform:scale(0.7) translateY(4px)">${renderPlotCropMedia(plot.cropId, G.prestige, { simple: true, imgClass: 'plot-crop-img seeding-crop-img' })}</div>
             <div style="font-size:9px;color:${atRisk?'#FF8C00':'#A78BFA'};font-weight:700">${atRisk?'⚠️ At risk':'🌱 Seeding…'}</div>
           </div>
           <svg class="progress-ring-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -436,7 +449,7 @@ export function renderPlots() {
     const r = 44, circ = 2*Math.PI*r, offset = circ*(1-progress);
     const isFertTarget = G.fertiliseMode && !plot.fertilised;
     const clickHandler2 = G.fertiliseMode ? `applyFertiliser(${idx})` : '';
-    const growingCropSvg = cropArtWithPrestige(plot.cropId, G.prestige);
+    const growingCropSvg = renderPlotCropMedia(plot.cropId, G.prestige, { imgClass: 'plot-crop-img growing-crop-img' });
     return `<div class="plot-tile growing ${isFertTarget?'fertilise-target':''}${bc}" data-idx="${idx}" ${clickHandler2?`onclick="${clickHandler2}"`:''}>
       <div class="plot-visual">
         <div class="plot-soil-bg">${soilSVGWithPrestige('100%','100%',G.prestige)}</div>
