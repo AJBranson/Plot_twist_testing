@@ -5,7 +5,8 @@
 import { CROPS, CROP_MAP, PLOT_COSTS, LEVELS, SEED_PHASE_RATIO, MISHAP_INSURANCE_COST, MISHAP_INSURANCE_SECS, COMPOST_MAX_CHARGES } from './constants.js';
 import { G, saveGame, calcFarmScore } from './game-state.js';
 import { getLevelData, prestigeMultiplier, canUnlockPlot, formatTime,
-         checkLevelUp, isCropUnlocked, formatBSV } from './utils.js';
+         checkLevelUp, isCropUnlocked, formatUSD, coinsToUSD, seedsToUSD,
+         USD_COMPOST_REFILL, USD_SPEED_BOOST } from './utils.js';
 import { checkAchievements } from './achievements.js';
 import { requestBSVPayment } from './bsv-payments.js';
 import { playCompostSound, playEventSound, playHarvestSound, playPlantSound, playPlotUnlockSound, playWateringCanSound } from './sound.js';
@@ -21,16 +22,14 @@ function renderCompost()    { if (window.renderCompost) window.renderCompost(); 
 function renderWateringCan(){ if (window.renderWateringCan) window.renderWateringCan(); }
 function showConfirm(t,d,fn){ if (window.showConfirm)  window.showConfirm(t,d,fn); }
 
-// ── BSV helpers ───────────────────────────────────────────
-export function coinsToSatoshis(coins) { return coins * 1000; }
-
-function payWithBSV(satoshis, ref, note, onSuccess, onFail) {
+// ── Wallet payment helpers ────────────────────────────────
+function payWithBSV(usdAmount, ref, note, onSuccess, onFail) {
   const GAME_BSV_ADDRESS = '1rdvvikhzjLoGsqurQN6Xhz2CtGDzpuQd';
   if (window.platformSDK && G.walletConnected) {
     requestBSVPayment({
       ref,
-      recipients: [{ address: GAME_BSV_ADDRESS, value: satoshis, note: 'Plot Twist purchase' }],
-      pendingMessage: note || '₿ Awaiting wallet confirmation…',
+      recipients: [{ address: GAME_BSV_ADDRESS, fiatValue: usdAmount, fiatvalue: usdAmount, note: 'Plot Twist purchase' }],
+      pendingMessage: note || 'Awaiting wallet confirmation…',
     })
       .then(onSuccess)
       .catch((error) => onFail(error.message || 'Payment failed'));
@@ -100,7 +99,7 @@ export function shopChangeQty(cropId, delta) {
   const totalEl = document.getElementById('qty-total-' + cropId);
   if (totalEl) totalEl.textContent = '🪙 ' + totalCoins;
   const bsvEl = document.getElementById('qty-bsv-' + cropId);
-  if (bsvEl) bsvEl.textContent = formatBSV(totalCoins);
+  if (bsvEl) bsvEl.textContent = formatUSD(seedsToUSD(val));
   const buyBtn = document.getElementById('buy-btn-' + cropId);
   if (buyBtn) buyBtn.disabled = G.coins < totalCoins;
   const bsvBtn = document.getElementById('bsv-btn-' + cropId);
@@ -127,24 +126,23 @@ export function buySeeds(cropId, qty) {
 export function buySeedsBSV(cropId, qty) {
   const crop = CROP_MAP[cropId];
   if (!crop || qty < 1 || qty > 10) return;
-  if (!G.walletConnected) { notify('🔗 Connect your wallet first to pay with BSV!', 'error'); return; }
-  const totalCoins = crop.seedCost * qty;
-  const satoshis = coinsToSatoshis(totalCoins);
+  if (!G.walletConnected) { notify('🔗 Connect your wallet first to pay!', 'error'); return; }
+  const usdPrice = seedsToUSD(qty);
   const ref = 'seeds-' + cropId + '-' + Date.now();
   const btn = document.getElementById('bsv-btn-' + cropId);
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Paying…'; }
-  payWithBSV(satoshis, ref, '₿ Awaiting wallet confirmation for seed purchase…',
+  payWithBSV(usdPrice, ref, 'Awaiting wallet confirmation for seed purchase (' + formatUSD(usdPrice) + ' USD)…',
     ({ broadcast }) => {
       G.inventory[cropId] = (G.inventory[cropId] || 0) + qty;
       G.shopExpanded = null;
-      if (btn) { btn.disabled = false; btn.textContent = '₿ ' + formatBSV(totalCoins); }
+      if (btn) { btn.disabled = false; btn.textContent = formatUSD(usdPrice); }
       saveGame(); renderAll();
       const txSuffix = broadcast?.txid ? ' Tx ' + broadcast.txid.slice(0, 8) + '…' : '';
-      notify('₿ Paid ' + formatBSV(totalCoins) + ' — got ' + qty + '× ' + crop.name + '!' + txSuffix, 'unlock');
+      notify('💳 Paid ' + formatUSD(usdPrice) + ' USD — got ' + qty + '× ' + crop.name + '!' + txSuffix, 'unlock');
     },
     (err) => {
-      if (btn) { btn.disabled = false; btn.textContent = '₿ ' + formatBSV(totalCoins); }
-      notify('₿ BSV payment failed: ' + err, 'error');
+      if (btn) { btn.disabled = false; btn.textContent = formatUSD(usdPrice); }
+      notify('💳 Wallet payment failed: ' + err, 'error');
     }
   );
 }
@@ -207,11 +205,12 @@ export function tryUnlockPlot(idx) {
 export function unlockPlotBSV(idx) {
   if (G.plots[idx].unlocked) return;
   const cost = PLOT_COSTS[idx];
+  const usdPrice = coinsToUSD(cost);
   if (!canUnlockPlot(idx)) { notify(`⚠️ Harvest from plot ${idx} first!`, 'error'); return; }
-  if (!G.walletConnected) { notify('🔗 Connect your wallet first to pay with BSV!', 'error'); return; }
+  if (!G.walletConnected) { notify('🔗 Connect your wallet first to pay!', 'error'); return; }
   const ref = 'plot-' + idx + '-' + Date.now();
-  notify(`₿ Requesting BSV payment for Plot ${idx + 1}…`, 'harvest');
-  payWithBSV(coinsToSatoshis(cost), ref, `₿ Awaiting wallet confirmation for Plot ${idx + 1}…`,
+  notify(`💳 Requesting wallet payment for Plot ${idx + 1} (${formatUSD(usdPrice)} USD)…`, 'harvest');
+  payWithBSV(usdPrice, ref, `Awaiting wallet confirmation for Plot ${idx + 1} (${formatUSD(usdPrice)} USD)…`,
     ({ broadcast }) => {
       G.plots[idx].unlocked = true;
       checkAchievements();
@@ -219,35 +218,33 @@ export function unlockPlotBSV(idx) {
       renderAll();
       playPlotUnlockSound();
       const txSuffix = broadcast?.txid ? ' Tx ' + broadcast.txid.slice(0, 8) + '…' : '';
-      notify(`🔓 Plot ${idx + 1} unlocked with BSV!` + txSuffix, 'unlock');
+      notify(`🔓 Plot ${idx + 1} unlocked for ${formatUSD(usdPrice)} USD!` + txSuffix, 'unlock');
     },
-    (err) => { notify('₿ BSV payment failed: ' + err, 'error'); }
+    (err) => { notify('💳 Wallet payment failed: ' + err, 'error'); }
   );
 }
 
 export function buyCompostBSV() {
-  if (!G.walletConnected) { notify('🔗 Connect your wallet first to buy compost with BSV!', 'error'); return; }
+  if (!G.walletConnected) { notify('🔗 Connect your wallet first to buy compost!', 'error'); return; }
   if (G.compostCharges > 0) { notify('🌿 Compost pile still has charges!', 'info'); return; }
-  const bsvCost = 0.0002;
-  const satoshis = Math.round(bsvCost * 1e8);
   const ref = 'compost-' + Date.now();
   showConfirm(
     '🌿 Buy Compost',
-    'Instantly refill your compost pile to 5 charges for ₿ ' + bsvCost.toFixed(4) + ' BSV?',
+    'Instantly refill your compost pile to 5 charges for ' + formatUSD(USD_COMPOST_REFILL) + ' USD?',
     () => {
       const btn = document.getElementById('compost-buy-btn');
       if (btn) { btn.disabled = true; btn.textContent = '⏳ Processing…'; }
-      payWithBSV(satoshis, ref, '₿ Awaiting wallet confirmation for compost purchase…',
+      payWithBSV(USD_COMPOST_REFILL, ref, 'Awaiting wallet confirmation for compost purchase (' + formatUSD(USD_COMPOST_REFILL) + ' USD)…',
         ({ broadcast }) => {
           G.compostCharges = COMPOST_MAX_CHARGES;
           G.compostLastCharged = Date.now();
           saveGame(); renderAll();
           const txSuffix = broadcast?.txid ? ' Tx ' + broadcast.txid.slice(0, 8) + '…' : '';
-          notify('🌿 Compost pile refilled with BSV!' + txSuffix, 'unlock');
+          notify('🌿 Compost pile refilled for ' + formatUSD(USD_COMPOST_REFILL) + ' USD!' + txSuffix, 'unlock');
         },
         (err) => {
-          if (btn) { btn.disabled = false; btn.textContent = '₿ Buy Compost — 0.0002 BSV'; }
-          notify('₿ BSV payment failed: ' + err, 'error');
+          if (btn) { btn.disabled = false; btn.textContent = formatUSD(USD_COMPOST_REFILL); }
+          notify('💳 Wallet payment failed: ' + err, 'error');
         }
       );
     }
@@ -435,29 +432,27 @@ export function buyMishapInsurance() {
 }
 
 export function buySpeedBoost() {
-  if (!G.walletConnected) { notify('🔗 Connect your wallet first to buy speed boost with BSV!', 'error'); return; }
+  if (!G.walletConnected) { notify('🔗 Connect your wallet first to buy speed boost!', 'error'); return; }
   if (G._speedBoostExpiry > Date.now()) { notify('⚡ Speed boost already active!', 'info'); return; }
-  const bsvCost = 0.01;
-  const satoshis = Math.round(bsvCost * 1e8);
   const ref = 'speed-' + Date.now();
   showConfirm(
     '⚡ Speed Boost',
-    'Speed up your farm 10× for 20 minutes! Crops grow, seed, and recharge 10× faster. Cost: ₿ ' + bsvCost.toFixed(4) + ' BSV?',
+    'Speed up your farm 10× for 20 minutes! Crops grow, seed, and recharge 10× faster. Cost: ' + formatUSD(USD_SPEED_BOOST) + ' USD?',
     () => {
       const btn = document.getElementById('speed-boost-btn');
       if (btn) { btn.disabled = true; btn.innerHTML = '⏳'; }
-      payWithBSV(satoshis, ref, '₿ Awaiting wallet confirmation for speed boost…',
+      payWithBSV(USD_SPEED_BOOST, ref, 'Awaiting wallet confirmation for speed boost (' + formatUSD(USD_SPEED_BOOST) + ' USD)…',
         ({ broadcast }) => {
           G._speedBoostExpiry = Date.now() + 20 * 60 * 1000;
           saveGame();
           if (window._restartTick) window._restartTick();
           renderAll();
           const txSuffix = broadcast?.txid ? ' Tx ' + broadcast.txid.slice(0, 8) + '…' : '';
-          notify('⚡ Speed Boost activated! 10× farm speed for 20 minutes!' + txSuffix, 'levelup');
+          notify('⚡ Speed Boost activated for ' + formatUSD(USD_SPEED_BOOST) + ' USD! 10× farm speed for 20 minutes!' + txSuffix, 'levelup');
         },
         (err) => {
           if (btn) { btn.disabled = false; }
-          notify('₿ BSV payment failed: ' + err, 'error');
+          notify('💳 Wallet payment failed: ' + err, 'error');
         }
       );
     }

@@ -89,7 +89,7 @@ async function broadcastRawTransaction(rawTxHex) {
   };
 }
 
-export async function requestBSVPayment({ ref, recipients, pendingMessage = '₿ Awaiting wallet confirmation…' }) {
+export async function requestBSVPayment({ ref, recipients, pendingMessage = 'Awaiting wallet confirmation…' }) {
   if (!window.platformSDK || !G?.walletConnected) {
     throw new Error('Wallet not available in this environment.');
   }
@@ -111,7 +111,7 @@ export async function requestBSVPayment({ ref, recipients, pendingMessage = '₿
     throw new Error('Payment succeeded but no signed transaction was returned.');
   }
 
-  notifyPayment('₿ Payment signed. Broadcasting transaction…', 'harvest');
+  notifyPayment('Wallet payment signed. Broadcasting transaction…', 'harvest');
   const broadcast = await broadcastRawTransaction(payload.rawTxHex);
   return {
     payment: payload,

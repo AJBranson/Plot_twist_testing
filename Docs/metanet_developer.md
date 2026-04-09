@@ -100,7 +100,9 @@ window.platformSDK = { sendCommand, onCommand };
     { "reason": "AI_IMG" },
     {
       "address": "target_address",
-      "value": 330000
+	  value: 330000, // in satoshis OR
+	  fiatValue: 12, // in fiat currency (platform will convert)
+	  currency: "USD", // optional, defaults to USD. Supports: USD, EUR,GBP, JPY, AED, AUD, CAD, CHF, CNY, INR, BRL, MXN, KRW, RUB, ZAR, SEK, NOK,DKK, SGD, HKD, NZD, THB, IDR, MYR, PHP, TWD, PLN, TRY, ARS, CLP, COP
     }
   ]
 }
