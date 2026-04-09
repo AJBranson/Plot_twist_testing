@@ -3,7 +3,7 @@
 
 import { G, saveGame, ensureVegeStandUnlocked, hasUnlockedVegeStand } from './game-state.js';
 import { CROP_MAP } from './constants.js';
-import { CROP_THEME, cropArt, cropArtWithPrestige, escHtml, formatUSD, timeSince } from './utils.js';
+import { CROP_THEME, USD_PER_SEED, cropArt, cropArtWithPrestige, escHtml, formatUSD, timeSince } from './utils.js';
 import { lbClient } from './leaderboard.js';
 import { requestBSVPayment } from './bsv-payments.js';
 
@@ -94,10 +94,9 @@ function hasListableSeeds() {
 function calcSuggestedPrice(baseCropId, isHeritage, qty) {
   const crop = CROP_MAP[baseCropId];
   if (!crop) return 0.01;
-  const base = crop.seedCost * 0.01;
-  let mult = isHeritage ? 1.5 : 1.0;
-  if (qty >= 3) mult = isHeritage ? 4.0 : 2.8;
-  return Math.round(base * mult * qty * 100) / 100;
+  const multiplier = isHeritage ? 3 : (crop.exotic ? 2 : 1);
+  const packetDiscount = qty >= 3 ? 0.9 : 1;
+  return Math.max(0.01, Math.round(USD_PER_SEED * multiplier * qty * packetDiscount * 100) / 100);
 }
 
 export async function toggleStandOpen() {
@@ -482,9 +481,7 @@ export async function listSeeds(cropId, qty, usdPrice = null) {
   const baseCropId = cropId.replace('_heritage','');
   const crop = CROP_MAP[baseCropId] || {};
   const isHeritage = cropId.includes('_heritage');
-  const basePrice = crop.seedCost ? crop.seedCost * 0.01 : 0.01;
-  const multiplier = isHeritage ? 3 : (crop.exotic ? 2 : 1);
-  const defaultUsdPrice = Math.round(basePrice * multiplier * (qty >= 3 ? 0.9 : 1) * 100) / 100;
+  const defaultUsdPrice = calcSuggestedPrice(baseCropId, isHeritage, qty);
   const finalUsdPrice = usdPrice !== null ? Math.max(0.01, Math.round(Number(usdPrice || 0) * 100) / 100) : defaultUsdPrice;
   const listing = { id:'listing-'+Date.now()+'-'+Math.random().toString(36).substr(2,9), cropId, cropName:crop.name||'Unknown', qty, usd_price: finalUsdPrice, heritage:isHeritage, seller_address:G.walletAddress, seller_name:G.farmerName||'Farmer', status:'active', listed_at:new Date().toISOString() };
   G.inventory[cropId] -= qty;

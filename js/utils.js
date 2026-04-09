@@ -126,8 +126,8 @@ export function compostNextChargeSecs() {
 // ============================================================
 // BSV FORMATTING
 // ============================================================
-export const USD_PER_COIN = 0.01;
-export const USD_PER_SEED = 0.02;
+export const USD_PER_COIN = 0.0001;
+export const USD_PER_SEED = 0.01;
 export const USD_COMPOST_REFILL = 0.20;
 export const USD_SPEED_BOOST = 1.00;
 

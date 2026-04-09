@@ -2,10 +2,10 @@ import { JSDOM } from 'jsdom';
 import { SAVE_KEY } from '../js/constants.js';
 import { G, loadGame } from '../js/game-state.js';
 import { acceptMerchantDeal } from '../js/game-state.js';
-import { executePurchase } from '../js/marketplace.js';
+import { executePurchase, listSeeds } from '../js/marketplace.js';
 
 function setupDom() {
-  const dom = new JSDOM('<!doctype html><html><body><div id="merchant-banner"></div></body></html>', { url: 'http://localhost' });
+  const dom = new JSDOM('<!doctype html><html><body><div id="merchant-banner"></div><div id="vege-stand-area"></div></body></html>', { url: 'http://localhost' });
   global.window = dom.window;
   global.document = dom.window.document;
   global.localStorage = dom.window.localStorage;
@@ -96,12 +96,33 @@ async function testExecutePurchaseFlow() {
   assert(window._pendingBuyListing === null, 'pending buy listing should be cleared');
 }
 
+async function testListSeedsDefaultPricingUsesSeedBase() {
+  setupDom();
+  localStorage.clear();
+
+  loadGame();
+  G.inventory = { radish: 3 };
+  G.standListings = [];
+  G.walletConnected = true;
+  G.walletAddress = 'wallet123';
+
+  window.renderStorage = () => {};
+  window.notify = () => {};
+
+  await listSeeds('radish', 3);
+
+  assert(G.standListings.length === 1, 'listing should be created');
+  assert(G.standListings[0].usd_price === 0.03, '3 regular seeds should list for $0.03 at the packet rate');
+}
+
 async function runTests() {
   console.log('Running marketplace/merchant tests...');
   await testAcceptMerchantDealSaves();
   console.log('  √ acceptMerchantDeal flow passed');
   await testExecutePurchaseFlow();
   console.log('  √ executePurchase flow passed');
+  await testListSeedsDefaultPricingUsesSeedBase();
+  console.log('  √ listSeeds default pricing passed');
   console.log('All marketplace/merchant tests passed.');
 }
 
