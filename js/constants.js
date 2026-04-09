@@ -84,7 +84,7 @@ export const MERCHANT_DURATION = 3 * 60 * 1000;
 export const MERCHANT_MIN_GAP  = 10 * 60 * 1000;
 export const MERCHANT_MAX_GAP  = 15 * 60 * 1000;
 
-export const MISHAP_INSURANCE_COST   = 50;
+export const MISHAP_INSURANCE_COST   = 500;
 export const MISHAP_INSURANCE_SECS   = 30 * 60;
 
 // NOTE: Callbacks access game state via window.G, window.notify, etc.

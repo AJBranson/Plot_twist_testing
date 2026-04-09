@@ -112,7 +112,7 @@ async function testListSeedsDefaultPricingUsesSeedBase() {
   await listSeeds('radish', 3);
 
   assert(G.standListings.length === 1, 'listing should be created');
-  assert(G.standListings[0].usd_price === 0.03, '3 regular seeds should list for $0.03 at the packet rate');
+  assert(G.standListings[0].usd_price === 0.05, '3 regular seeds should list for $0.05 at the packet rate with seedCost pricing');
 }
 
 async function runTests() {

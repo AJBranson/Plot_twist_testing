@@ -356,7 +356,6 @@ export function renderPlots() {
     if (!plot.unlocked) {
       const canAfford = G.coins >= cost;
       const canUnlock = idx === 0 || G.plots[idx-1].harvestedCount >= 1;
-      const usdCost = formatUSD(coinsToUSD(cost));
       return `<div class="plot-tile locked" data-idx="${idx}">
         <div class="plot-visual" style="background:#131310;border:2px solid rgba(255,255,255,0.05)">
           <div class="plot-overlay" style="flex-direction:column;gap:4px">${lockSVGWithPrestige(G.prestige)}</div>
@@ -366,7 +365,6 @@ export function renderPlots() {
           <span style="font-size:9px;color:var(--text-dim);text-align:center">${!canUnlock?'⚠️ harvest first':'Plot '+(idx+1)}</span>
           ${canUnlock?`<div style="display:flex;gap:4px">
             <button onclick="tryUnlockPlot(${idx})" style="flex:1;background:${canAfford?'rgba(255,209,64,0.15)':'rgba(100,100,100,0.15)'};border:1px solid ${canAfford?'rgba(255,209,64,0.4)':'rgba(100,100,100,0.3)'};border-radius:6px;padding:3px 4px;font-size:9px;font-weight:800;color:${canAfford?'#FFD140':'#888'};cursor:${canAfford?'pointer':'not-allowed'}" ${canAfford?'':'disabled'}>🪙 ${cost}</button>
-            <button onclick="unlockPlotBSV(${idx})" style="flex:1;background:${G.walletConnected?'rgba(200,134,10,0.2)':'rgba(100,100,100,0.1)'};border:1px solid ${G.walletConnected?'rgba(200,134,10,0.5)':'rgba(100,100,100,0.2)'};border-radius:6px;padding:3px 4px;font-size:9px;font-weight:800;color:${G.walletConnected?'#F5A623':'#666'};cursor:${G.walletConnected?'pointer':'not-allowed'}" ${G.walletConnected?'':'disabled'}>${usdCost}</button>
           </div>`:''}
         </div>
       </div>`;
@@ -666,7 +664,7 @@ export function renderShop() {
           <button class="buy-btn" id="buy-btn-${crop.id}" onclick="event.stopPropagation();buySeeds('${crop.id}',parseInt(document.getElementById('qty-val-${crop.id}').textContent))" ${G.coins>=crop.seedCost?'':'disabled'}>Buy</button>
         </div>
         <div style="display:flex;justify-content:flex-end;padding:4px 0 2px;border-top:1px solid rgba(255,209,64,0.15);margin-top:4px">
-          <button class="bsv-buy-btn" id="bsv-btn-${crop.id}" onclick="event.stopPropagation();buySeedsBSV('${crop.id}',parseInt(document.getElementById('qty-val-${crop.id}').textContent))" ${G.walletConnected?'':'disabled'} title="${G.walletConnected?'Pay in USD via wallet':'Connect wallet to pay'}"><span id="qty-bsv-${crop.id}">${formatUSD(seedsToUSD(initQty))}</span></button>
+          <button class="bsv-buy-btn" id="bsv-btn-${crop.id}" onclick="event.stopPropagation();buySeedsBSV('${crop.id}',parseInt(document.getElementById('qty-val-${crop.id}').textContent))" ${G.walletConnected?'':'disabled'} title="${G.walletConnected?'Pay in USD via wallet':'Connect wallet to pay'}"><span id="qty-bsv-${crop.id}">${formatUSD(seedsToUSD(initQty, crop.seedCost))}</span></button>
         </div>`;
       }
       return `<div class="${classes}" onclick="toggleShopCard('${crop.id}')">${mainRow}${qtyPicker}</div>`;

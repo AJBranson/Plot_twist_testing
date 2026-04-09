@@ -126,7 +126,7 @@ export function compostNextChargeSecs() {
 // ============================================================
 // BSV FORMATTING
 // ============================================================
-export const USD_PER_COIN = 0.0001;
+export const USD_PER_COIN = 0.01;
 export const USD_PER_SEED = 0.01;
 export const USD_COMPOST_REFILL = 0.20;
 export const USD_SPEED_BOOST = 1.00;
@@ -139,12 +139,13 @@ export function coinsToUSD(coins) {
   return Number(coins || 0) * USD_PER_COIN;
 }
 
-export function seedsToUSD(qty) {
+export function seedsToUSD(qty, seedCost) {
+  if (seedCost !== undefined) return Number(qty || 0) * Number(seedCost || 0) * USD_PER_COIN;
   return Number(qty || 0) * USD_PER_SEED;
 }
 
 export function formatBSV(coins) {
-  const bsv = coins * 0.00001;
+  const bsv = coins * USD_PER_COIN / 50;
   return bsv.toFixed(5).replace(/\.?0+$/, '') + ' BSV';
 }
 

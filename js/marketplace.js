@@ -3,7 +3,7 @@
 
 import { G, saveGame, ensureVegeStandUnlocked, hasUnlockedVegeStand } from './game-state.js';
 import { CROP_MAP } from './constants.js';
-import { CROP_THEME, USD_PER_SEED, cropArt, cropArtWithPrestige, escHtml, formatUSD, timeSince } from './utils.js';
+import { CROP_THEME, USD_PER_COIN, cropArt, cropArtWithPrestige, escHtml, formatUSD, timeSince } from './utils.js';
 import { lbClient } from './leaderboard.js';
 import { requestBSVPayment } from './bsv-payments.js';
 
@@ -96,7 +96,7 @@ function calcSuggestedPrice(baseCropId, isHeritage, qty) {
   if (!crop) return 0.01;
   const multiplier = isHeritage ? 3 : (crop.exotic ? 2 : 1);
   const packetDiscount = qty >= 3 ? 0.9 : 1;
-  return Math.max(0.01, Math.round(USD_PER_SEED * multiplier * qty * packetDiscount * 100) / 100);
+  return Math.max(0.01, Math.round(USD_PER_COIN * crop.seedCost * multiplier * qty * packetDiscount * 100) / 100);
 }
 
 export async function toggleStandOpen() {

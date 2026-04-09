@@ -99,7 +99,7 @@ export function shopChangeQty(cropId, delta) {
   const totalEl = document.getElementById('qty-total-' + cropId);
   if (totalEl) totalEl.textContent = '🪙 ' + totalCoins;
   const bsvEl = document.getElementById('qty-bsv-' + cropId);
-  if (bsvEl) bsvEl.textContent = formatUSD(seedsToUSD(val));
+  if (bsvEl) bsvEl.textContent = formatUSD(seedsToUSD(val, crop.seedCost));
   const buyBtn = document.getElementById('buy-btn-' + cropId);
   if (buyBtn) buyBtn.disabled = G.coins < totalCoins;
   const bsvBtn = document.getElementById('bsv-btn-' + cropId);
@@ -127,7 +127,7 @@ export function buySeedsBSV(cropId, qty) {
   const crop = CROP_MAP[cropId];
   if (!crop || qty < 1 || qty > 10) return;
   if (!G.walletConnected) { notify('🔗 Connect your wallet first to pay!', 'error'); return; }
-  const usdPrice = seedsToUSD(qty);
+  const usdPrice = seedsToUSD(qty, crop.seedCost);
   const ref = 'seeds-' + cropId + '-' + Date.now();
   const btn = document.getElementById('bsv-btn-' + cropId);
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Paying…'; }
