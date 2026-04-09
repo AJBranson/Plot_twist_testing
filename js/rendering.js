@@ -562,13 +562,8 @@ export function renderPlotsOnly() {
     const opacity = 0.4 + progress * 0.6;
     const artEl = tile.querySelector('.crop-art');
     if (artEl) {
-      if (window.PLOT_TWIST_EMBEDDED) {
-        artEl.style.transform = 'scale(0.82) translateY(-6px)';
-        artEl.style.opacity = '1';
-      } else {
-        artEl.style.transform = `scale(${scale.toFixed(3)}) translateY(${(-(scale*8)).toFixed(1)}px)`;
-        artEl.style.opacity = opacity.toFixed(3);
-      }
+      artEl.style.transform = `scale(${scale.toFixed(3)}) translateY(${(-(scale*8)).toFixed(1)}px)`;
+      artEl.style.opacity = opacity.toFixed(3);
     }
     const ringFill = tile.querySelector('.progress-ring-fill');
     if (ringFill) {
