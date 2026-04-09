@@ -36,6 +36,8 @@ import { setMarketFilter, setMarketSort, refreshMarket, executePurchase,
          toggleStandOpen, showListingModal, updateListingModal, changeListingQty, confirmListing } from './marketplace.js';
 import { spinDailyWheel, closeDailyWheel, scheduleDailyWheel } from './daily-wheel.js';
 
+const BUILD_ID = '2026-04-09-ready-render-fix-4';
+
 // ── Expose window globals ─────────────────────────────────
 // Rendering helpers (used by game.js via window.*)
 window.notify          = notify;
@@ -135,6 +137,9 @@ window.spinDailyWheel     = spinDailyWheel;
 window.closeDailyWheel    = closeDailyWheel;
 // ── Initialization ────────────────────────────────────────
 function init() {
+  window.PLOT_TWIST_BUILD = BUILD_ID;
+  console.info('[Plot Twist] Build', BUILD_ID);
+
   initSound();
 
   // Wire deferred UI handlers (breaks circular game-state ↔ rendering)
